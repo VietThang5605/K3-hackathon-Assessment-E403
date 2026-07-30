@@ -24,8 +24,6 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
-      - GEMINI_MODEL=gemini-2.0-flash-lite
-      - DEFAULT_AI_PROVIDER=gemini
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=vlearn_db
@@ -52,4 +50,3 @@ services:
 
 volumes:
   postgres_data:
-
