@@ -14,7 +14,7 @@ export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
   const [slideList, setSlideList] = useState(SAMPLE_SLIDES);
   const [selectedSlide, setSelectedSlide] = useState(SAMPLE_SLIDES[0]);
-  const [quizList, setQuizList] = useState(INITIAL_QUIZ);
+  const [quizList, setQuizList] = useState([]);
   const [questionCountConfig, setQuestionCountConfig] = useState(5);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -22,9 +22,8 @@ export default function Home() {
   const [studentSubmitted, setStudentSubmitted] = useState(false);
   const [altPoolIndex, setAltPoolIndex] = useState(0);
 
-  // API Mode (Live API vs Mock)
-  const [apiMode, setApiMode] = useState('LIVE'); // 'LIVE' or 'MOCK'
-  const [aiProvider, setAiProvider] = useState('gemini'); // 'gemini' or 'openai'
+  // AI Provider selection (no mock mode — always uses backend agent)
+  const [aiProvider, setAiProvider] = useState('gemini'); // 'gemini', 'openai', or 'anthropic'
 
   // File Upload Ref
   const fileInputRef = useRef(null);
@@ -56,10 +55,73 @@ export default function Home() {
     { number: 5, label: "Heatmap & Eval CP3" }
   ];
 
-  // Handler: Real File Upload simulation
-  const handleFileUpload = (e) => {
+  // Load uploaded documents from PostgreSQL DB on mount
+  React.useEffect(() => {
+    async function loadDocumentsFromDb() {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${backendUrl}/api/documents`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.documents && data.documents.length > 0) {
+            const formattedDocs = data.documents.map(d => ({
+              id: d.id,
+              title: d.title,
+              pages: d.page_count || 20,
+              size: d.file_size || '2.4 MB',
+              uploadTime: 'Đã lưu PostgreSQL DB',
+              course: d.course_name || 'K3-AI Product Architecture',
+              author: d.author || 'Giảng viên'
+            }));
+            setSlideList(formattedDocs);
+            setSelectedSlide(formattedDocs[0]);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch initial documents from DB:', err);
+      }
+    }
+    loadDocumentsFromDb();
+  }, []);
+
+  // Handler: Real File Upload & PostgreSQL Persistence
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', file.name);
+
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${backendUrl}/api/documents/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.document) {
+          const newSlide = {
+            id: data.document.id,
+            title: data.document.title,
+            pages: data.document.page_count || 20,
+            size: data.document.file_size || '1.5 MB',
+            uploadTime: 'Vừa lưu PostgreSQL DB',
+            course: data.document.course_name || 'K3-AI Product Architecture',
+            author: data.document.author || 'Giảng viên'
+          };
+          setSlideList(prev => [newSlide, ...prev]);
+          setSelectedSlide(newSlide);
+          alert(`Đã tải lên & lưu PostgreSQL DB thành công file: "${file.name}"!`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend DB upload disconnected, using local fallback:', err);
+    }
+
     const newSlide = {
       id: `uploaded-${Date.now()}`,
       title: file.name,
@@ -74,53 +136,50 @@ export default function Home() {
     alert(`Đã tải lên thành công file: "${file.name}"! Slide đã được chọn để sinh Quiz.`);
   };
 
-  // Handler: Start AI Generation (Backend Live Call or Mock)
+  // Handler: Start AI Generation (Backend Agent Call — no mock fallback)
   const handleGenerateQuiz = async () => {
     setIsGenerating(true);
 
-    if (apiMode === 'LIVE') {
-      try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${backendUrl}/api/generate-quiz`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            slideTitle: selectedSlide.title,
-            numQuestions: questionCountConfig,
-            provider: aiProvider
-          })
-        });
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${backendUrl}/api/generate-quiz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          documentId: selectedSlide.id,
+          slideTitle: selectedSlide.title,
+          numQuestions: questionCountConfig,
+          provider: aiProvider
+        })
+      });
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.quizList && data.quizList.length > 0) {
-            setQuizList(data.quizList);
-            setIsGenerating(false);
-            setCurrentStep(2);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Backend API disconnected or error, falling back to client mode:', err);
+      const data = await res.json();
+
+      if (res.ok && data.quizList && data.quizList.length > 0) {
+        setQuizList(data.quizList);
+        setIsGenerating(false);
+        setCurrentStep(2);
+        return;
       }
-    }
 
-    // Fallback Mock Mode
-    setTimeout(() => {
+      // Backend returned an error
       setIsGenerating(false);
-      let generated = [...INITIAL_QUIZ];
-      if (questionCountConfig < generated.length) {
-        generated = generated.slice(0, questionCountConfig);
-      } else if (questionCountConfig > generated.length) {
-        const extraNeeded = questionCountConfig - generated.length;
-        for (let i = 0; i < extraNeeded; i++) {
-          const alt = ALTERNATIVE_QUESTIONS_POOL[i % ALTERNATIVE_QUESTIONS_POOL.length];
-          generated.push({ ...alt, id: `q-extra-${i}` });
-        }
-      }
-      setQuizList(generated);
-      setCurrentStep(2);
-    }, 800);
+      alert(
+        `❌ Không thể sinh Quiz!\n\n` +
+        `${data.error || 'Vui lòng kiểm tra API key trong backend/.env và thử lại.'}\n\n` +
+        `Hướng dẫn:\n` +
+        `1. Mở file backend/.env\n` +
+        `2. Đặt API key cho provider "${aiProvider}" (GEMINI_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY)\n` +
+        `3. Khởi động lại backend`
+      );
+    } catch (err) {
+      setIsGenerating(false);
+      alert(
+        `❌ Không thể kết nối đến Backend!\n\n` +
+        `Lỗi: ${err.message}\n\n` +
+        `Kiểm tra backend đang chạy tại http://localhost:8000`
+      );
+    }
   };
 
   // Handler: Edit question
@@ -345,6 +404,18 @@ export default function Home() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <a
+              href="/documents"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-700)',
+                background: 'var(--primary-50)', padding: '0.3rem 0.7rem',
+                borderRadius: '20px', border: '1px solid var(--primary-200)',
+                textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s'
+              }}
+            >
+              <Database size={14} /> Kho Tài Liệu
+            </a>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               AI Model:
             </span>
@@ -356,6 +427,7 @@ export default function Home() {
             >
               <option value="gemini">Gemini 2.0 Flash-Lite (Google)</option>
               <option value="openai">GPT-4o Mini (OpenAI)</option>
+              <option value="anthropic">Claude 3.5 Sonnet (Anthropic)</option>
             </select>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-700)', background: 'var(--primary-50)', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid var(--primary-200)' }}>
               🎯 Lớp: K3 - AI Product Architecture

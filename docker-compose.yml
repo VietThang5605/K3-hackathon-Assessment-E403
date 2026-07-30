@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vlearn_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=vlearn_db
+      - POSTGRES_USER=vlearn_user
+      - POSTGRES_PASSWORD=vlearn_password
+    volumes:
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
   backend:
     build:
       context: ./backend
@@ -12,8 +26,15 @@ services:
       - PORT=8000
       - GEMINI_MODEL=gemini-2.0-flash-lite
       - DEFAULT_AI_PROVIDER=gemini
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=vlearn_db
+      - POSTGRES_USER=vlearn_user
+      - POSTGRES_PASSWORD=vlearn_password
     env_file:
       - ./backend/.env
+    depends_on:
+      - postgres
     restart: always
 
   frontend:
@@ -28,3 +49,7 @@ services:
     depends_on:
       - backend
     restart: always
+
+volumes:
+  postgres_data:
+
