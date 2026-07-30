@@ -238,6 +238,10 @@ app.post('/api/eval/run', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 VLearn Backend running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 VLearn Backend running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
