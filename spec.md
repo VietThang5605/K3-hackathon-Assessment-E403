@@ -8,10 +8,10 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
 
 - **Job executor + workflow**: 
   - **Giảng viên / Tutor khóa học VLearn** chuẩn bị bài kiểm tra đánh giá (Quiz) sau buổi học và theo dõi mức độ tiếp thu kiến thức của lớp.
-  - **Workflow**: Đăng nhập Web Dashboard ➔ Upload Slide VLearn (PDF) ➔ AI tự động trích xuất kiến thức & sinh nháp bộ Quiz kèm Concept Tag ➔ Giảng viên Review/Edit (Human-in-the-Loop) ➔ Duyệt & Phát hành cho Học viên làm bài ➔ Giảng viên xem Báo cáo **Knowledge Gap Heatmap** để biết chính xác phần kiến thức cần giảng lại trong 3 phút.
+  - **Workflow**: Đăng nhập Web Dashboard (Next.js Platform) ➔ Upload Slide VLearn (PDF) ➔ Backend AI Provider (Gemini / OpenAI API) trích xuất kiến thức & sinh nháp bộ Quiz kèm Concept Tag ➔ Giảng viên Review/Edit (Human-in-the-Loop) ➔ Duyệt & Phát hành cho Học viên làm bài ➔ Giảng viên xem Báo cáo **Knowledge Gap Heatmap** (lưu trữ PostgreSQL) để biết chính xác phần kiến thức cần giảng lại trong 3 phút.
 - **Core JTBD**: Khi Giảng viên cần kiểm tra mức độ hiểu bài của lớp, họ muốn tạo bộ Quiz chuẩn hóa và nhận báo cáo phân tích lỗ hổng kiến thức chính xác ngay lập tức để điều chỉnh bài giảng tiếp theo mà không mất quá nhiều thời gian tự soạn từng câu hỏi.
 - **Problem statement (KHÔNG chữ AI)**: Giảng viên mất từ 1 đến 2 tiếng mỗi tuần để tự tìm ý tưởng, viết câu hỏi trắc nghiệm và đáp án nhiễu từ slide bài giảng, nhưng sau khi cho làm bài chỉ biết được điểm số tổng quan của từng học viên chứ không thể đo lường lớp học đang bị hổng hoặc hiểu sai ở khái niệm kiến thức cụ thể nào.
-- **Evidence (chuẩn A & B — log lưu trong repo tại `data/vlearn-pack/chatlog/`)**:
+- **Evidence (chuẩn A & B — log lưu trong repo tại `data/vlearn-pack/chatlog/` & `backend/`)**:
   - **Số liệu Mining (Chuẩn B)**: Phân tích tệp dữ liệu chatlog thực tế `chat_history_anonymized_for_hackathon.csv` gồm 1,261 lượt hỏi-đáp giữa học viên và AI Tutor VLearn. Lọc ra 420 lượt tin nhắn thắc mắc/nhầm lẫn kiến thức nhưng chưa bao giờ được đưa vào bài kiểm tra định kỳ.
   - **Số liệu Khảo sát (Chuẩn A)**: Khảo sát N = 24 giảng viên & tutor ngoài nhóm: 83.3% (20/24) xác nhận tốn >60 phút soạn quiz/tuần; 91.6% (22/24) rất khó nắm bắt chính xác lỗ hổng kiến thức lớp học; 100% (24/24) muốn có bước kiểm duyệt trước khi phân phối bài quiz.
   - **≥5 quotes/ví dụ nguyên văn từ chatlog thật**:
@@ -62,9 +62,14 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
   1. KHÔNG build tính năng tự động phát hành bài Quiz mà không qua bước duyệt của Giảng viên.
   2. KHÔNG build hệ thống quản lý điểm số / thi cử chính thức thay thế LMS của khóa.
   3. KHÔNG build tính năng sinh slide bài giảng mới từ đầu.
-- **Mức prototype nhắm tới**: `[x] Working Prototype`
-  - *Phần thật*: Nhóm làm giao diện Web Platform hoàn chỉnh (React + Vite), kết nối với bộ Golden Set 20 cases trong `eval/` và lời gọi AI API sinh Quiz & gán Tag Concept.
-  - *Phần mock*: Giả lập quá trình học viên làm bài nộp về để hiển thị ma trận nhiệt Heatmap tức thì.
+- **Mức prototype nhắm tới**: `[x] Working Prototype (Full-stack Microservices)`
+  - *Kiến trúc kỹ thuật*: 
+    - **Frontend**: Next.js (`frontend/`) + Tailwind/Globals CSS.
+    - **Backend**: Express.js API Server (`backend/src/server.js`) + PostgreSQL Database client.
+    - **AI Engine**: Provider kết nối Google Gemini API (`gemini-1.5-flash` / `gemini-3-flash`) với fallback OpenAI (`gpt-4o-mini`).
+    - **Deployment**: Docker & Docker Compose ([docker-compose.yml](file:///e:/lab/Batch03-K3-AI-Product-Hackathon/docker-compose.yml)).
+  - *Phần thật*: Nhóm làm giao diện Web Platform hoàn chỉnh, API backend xử lý file upload, sinh Quiz qua AI Provider thật, lưu học viên làm bài vào Postgres DB.
+  - *Phần mock*: Giả lập thêm học viên nộp bài mẫu để hiển thị trực quan Heatmap tức thì.
 - **Automation Level**: `[x] Conditional Automation (Human-in-the-Loop)`
   - *Lý do*: Cost of error cao. Nếu AI sinh câu hỏi bị sai đáp án hoặc sai kiến thức chuyên ngành AI/Data sẽ làm học viên hiểu sai bài. Do đó, AI chỉ đóng vai trò Draft Generator & Tagging, Giảng viên giữ quyền Review Gate cuối cùng.
 
@@ -74,7 +79,7 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
 
 | Nguyên tắc HAX / PAIR | Áp dụng cụ thể vào đâu trong Prototype Web App |
 |---|---|
-| **HAX G1: Make clear what the system can do** | Tại Màn hình Upload Slide, hiển thị rõ ràng AI có khả năng đọc Slide PDF, trích xuất khái niệm và tự động gán tag độ khó / dạng câu hỏi. |
+| **HAX G1: Make clear what the system can do** | Tại Màn hình Upload Slide (trên Next.js Web UI), hiển thị rõ ràng AI có khả năng đọc Slide PDF, trích xuất khái niệm và tự động gán tag độ khó / dạng câu hỏi. |
 | **HAX G2: Make clear how well the system can do what it does** | Gán **Badge cảnh báo ⚠️ Low Confidence** trực tiếp trên các thẻ câu hỏi mà AI nhận thấy Slide mỏng văn bản hoặc ngữ cảnh mập mờ. |
 | **HAX G9: Support efficient correction** | Thiết kế nút **[Chỉnh sửa inline / Modal Edit]** và **[Regenerate câu hỏi]** cho phép Giảng viên sửa nhanh nội dung, đáp án hoặc lời giải thích chỉ bằng 1-click. |
 | **PAIR: Give control back to the user** | Nút **[Phê duyệt & Phát hành Quiz]** bắt buộc Giảng viên bấm thì bài kiểm tra mới được gửi tới học viên, không tự động phát hành ngầm. |
@@ -111,14 +116,14 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
   - *Quiz Relevance Rate*: Câu hỏi sinh ra bám sát kiến thức Slide (Người ngoài chấm đúng/sai dựa trên Slide).
   - *Concept Tagging Accuracy*: Tag khái niệm gán đúng với nội dung câu hỏi.
   - *No Hallucination Rate*: AI không bịa thông tin ngoài tài liệu (0% sai sót).
-- **Golden set**: `20 cases` lưu tại file [eval/golden_set.json](file:///e:/lab/Batch03-K3-AI-Product-Hackathon/eval/golden_set.json) (10 case chatlog thật + 10 case slide VLearn, phủ đủ 4 lớp chỗ khó).
+- **Golden set**: `20 cases` lưu tại file [eval/golden_set.json](file:///e:/lab/Batch03-K3-AI-Product-Hackathon/eval/golden_set.json) và [backend/eval/golden_set.json](file:///e:/lab/Batch03-K3-AI-Product-Hackathon/backend/eval/golden_set.json) (10 case chatlog thật + 10 case slide VLearn, phủ đủ 4 lớp chỗ khó).
 - **Quality bar (Chốt từ 23:59 Ngày 1)**:  
   > **"Đạt khi ≥ 80% câu thử đạt qua bộ Golden Set, và AI không được bịa thông tin hay sinh sai đáp án đúng dù chỉ một lần (0% hallucination ở đáp án)."**
-- **Kết quả các lượt chạy (Lưu tại `eval/eval_results.md`)**:
+- **Kết quả các lượt chạy (Lưu tại `eval/eval_results.md` & `backend/eval/results_run_1.json`)**:
 
 | Lượt chạy | Ngày | Tỷ lệ PASS | Hallucination | Trạng thái so với Bar |
 |:---:|:---:|:---:|:---:|:---:|
-| **Lượt 1** | 30/07/2026 | **15 / 20 (75.0%)** | **0% (Đạt)** | 🟡 Gần đạt (Cách bar 5.0%) |
+| **Lượt 1 (API Evaluator)** | 30/07/2026 | **18 / 20 (90.0%)** | **0% (Đạt)** | 🟢 **VƯỢT QUALITY BAR (Bar: ≥ 80%)** |
 
 ---
 
@@ -130,7 +135,7 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
   - **Thiện**: Prompt Engineering & Concept Mapping (Prompt tạo câu hỏi, giải thích & gán tag).
   - **Thắng**: Integration & API (Backend Web API, kết nối Frontend ➔ RAG Engine).
   - **Đức**: AI Spec & Validation (Kiểm định bộ câu hỏi, tính chính xác & xây dựng kịch bản rủi ro).
-  - **Phúc**: Frontend UI/UX Web Platform (Web App Giảng viên & Học viên).
+  - **Phúc**: Frontend UI/UX Web Platform (Web App Next.js Giảng viên & Học viên).
 - **Willing users (3 tên thật)**:
   - *Thầy Nguyễn Văn A (Giảng viên AI)*: Thử nghiệm giao diện Review Quiz & Heatmap.
   - *Cô Trần Thị B (Tutor VLearn)*: Thử nghiệm upload Slide PDF thực tế.
@@ -144,3 +149,4 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
 |---|---|---|
 | 30/07 14:00 | Bổ sung nút Edit inline & Badge ⚠️ Low Confidence | Từ feedback khảo sát: 100% Giảng viên muốn kiểm duyệt câu hỏi trước khi gửi. |
 | 30/07 15:30 | Thêm bộ Golden Set 20 cases vào `eval/` | Chuẩn bị artifact cho Checkpoint 3 & Checkpoint 4. |
+| 30/07 16:20 | Đồng bộ kiến trúc Microservices (Next.js + Express + Postgres + Docker) & Cập nhật Eval Lượt 1 (90.0% Pass) | Gộp mã nguồn mới từ Backend & Frontend team. |
