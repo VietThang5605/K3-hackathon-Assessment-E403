@@ -15,9 +15,13 @@ export default function Home() {
   const [slideList, setSlideList] = useState(SAMPLE_SLIDES);
   const [selectedSlide, setSelectedSlide] = useState(SAMPLE_SLIDES[0]);
   const [quizList, setQuizList] = useState([]);
+  const [currentQuizId, setCurrentQuizId] = useState(null);
   const [questionCountConfig, setQuestionCountConfig] = useState(5);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
+  const [backendHeatmap, setBackendHeatmap] = useState(null);
   const [studentAnswers, setStudentAnswers] = useState({});
   const [studentSubmitted, setStudentSubmitted] = useState(false);
   const [altPoolIndex, setAltPoolIndex] = useState(0);
@@ -157,6 +161,7 @@ export default function Home() {
 
       if (res.ok && data.quizList && data.quizList.length > 0) {
         setQuizList(data.quizList);
+        if (data.quizId) setCurrentQuizId(data.quizId);
         setIsGenerating(false);
         setCurrentStep(2);
         return;
@@ -179,6 +184,75 @@ export default function Home() {
         `Lỗi: ${err.message}\n\n` +
         `Kiểm tra backend đang chạy tại http://localhost:8000`
       );
+    }
+  };
+
+  // Handler: Publish Quiz (Calls POST /api/quizzes/publish)
+  const handlePublishQuiz = async () => {
+    setIsPublishing(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${backendUrl}/api/quizzes/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quizId: currentQuizId || `quiz-${Date.now()}`,
+          title: selectedSlide.title || 'Bộ Quiz Đánh Giá',
+          questions: quizList
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.quizId) setCurrentQuizId(data.quizId);
+      }
+    } catch (err) {
+      console.warn('Publish backend error:', err);
+    }
+    setIsPublishing(false);
+    setCurrentStep(3);
+  };
+
+  // Handler: Submit Student Quiz (Calls POST /api/quizzes/:id/submit)
+  const handleStudentSubmit = async () => {
+    setIsSubmittingQuiz(true);
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const qId = currentQuizId || 'quiz-default';
+      const res = await fetch(`${backendUrl}/api/quizzes/${qId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: `std-${Date.now()}`,
+          studentName: 'Học viên VLearn Demo',
+          answers: studentAnswers
+        })
+      });
+      if (res.ok) {
+        await fetchHeatmapFromBackend(qId);
+      }
+    } catch (err) {
+      console.warn('Submit quiz backend error:', err);
+    }
+    setIsSubmittingQuiz(false);
+    setStudentSubmitted(true);
+    alert("Đã nộp bài Quiz! Chuyển tới Màn hình Báo cáo Heatmap cho Giảng viên.");
+    setCurrentStep(5);
+  };
+
+  // Handler: Fetch Knowledge Gap Heatmap (Calls GET /api/quizzes/:id/heatmap)
+  const fetchHeatmapFromBackend = async (qId) => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const targetId = qId || currentQuizId || 'quiz-default';
+      const res = await fetch(`${backendUrl}/api/quizzes/${targetId}/heatmap`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.heatmap) {
+          setBackendHeatmap(data.heatmap);
+        }
+      }
+    } catch (err) {
+      console.warn('Fetch heatmap backend error:', err);
     }
   };
 
@@ -687,10 +761,15 @@ export default function Home() {
                 </button>
                 <button 
                   className="btn btn-primary" 
-                  onClick={() => setCurrentStep(3)}
+                  onClick={handlePublishQuiz}
+                  disabled={isPublishing}
                   style={{ fontSize: '1rem', padding: '0.75rem 1.75rem' }}
                 >
-                  <CheckCircle size={18} /> Phê Duyệt & Phát Hành Quiz ({quizList.length} câu) <ArrowRight size={18} />
+                  {isPublishing ? (
+                    <> <RefreshCw size={18} className="animate-spin" /> Đang phát hành lên PostgreSQL... </>
+                  ) : (
+                    <> <CheckCircle size={18} /> Phê Duyệt & Phát Hành Quiz ({quizList.length} câu) <ArrowRight size={18} /> </>
+                  )}
                 </button>
               </div>
             </div>
@@ -792,13 +871,14 @@ export default function Home() {
                 </button>
                 <button 
                   className="btn btn-primary"
-                  onClick={() => {
-                    setStudentSubmitted(true);
-                    alert("Đã nộp bài Quiz! Chuyển tới Màn hình Báo cáo Heatmap cho Giảng viên.");
-                    setCurrentStep(5);
-                  }}
+                  onClick={handleStudentSubmit}
+                  disabled={isSubmittingQuiz}
                 >
-                  <CheckCircle size={16} /> Nộp bài Quiz Học viên ➔ Xem Báo cáo
+                  {isSubmittingQuiz ? (
+                    <> <RefreshCw size={16} className="animate-spin" /> Đang gửi kết quả bài làm... </>
+                  ) : (
+                    <> <CheckCircle size={16} /> Nộp bài Quiz Học viên ➔ Xem Báo cáo </>
+                  )}
                 </button>
               </div>
             </div>
@@ -958,15 +1038,23 @@ export default function Home() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                       <Sparkles size={20} color="var(--primary-700)" />
                       <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary-800)' }}>
-                        {MOCK_CLASS_ANALYTICS.aiRecommendation.title}
+                        {backendHeatmap ? '🤖 Đề xuất 3 phút giảng lại từ AI Agent (Backend Live):' : MOCK_CLASS_ANALYTICS.aiRecommendation.title}
                       </h3>
                     </div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                      <p>{MOCK_CLASS_ANALYTICS.aiRecommendation.recapPoint1}</p>
-                      <p>{MOCK_CLASS_ANALYTICS.aiRecommendation.recapPoint2}</p>
-                      <div style={{ marginTop: '0.5rem', background: 'white', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--primary-200)', fontWeight: 600, color: 'var(--primary-800)', fontSize: '0.85rem' }}>
-                        💡 <strong>Hành động đề xuất:</strong> {MOCK_CLASS_ANALYTICS.aiRecommendation.suggestedAction}
-                      </div>
+                      {backendHeatmap ? (
+                        <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, background: 'white', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--primary-200)' }}>
+                          {backendHeatmap.aiRecapSuggestion}
+                        </div>
+                      ) : (
+                        <>
+                          <p>{MOCK_CLASS_ANALYTICS.aiRecommendation.recapPoint1}</p>
+                          <p>{MOCK_CLASS_ANALYTICS.aiRecommendation.recapPoint2}</p>
+                          <div style={{ marginTop: '0.5rem', background: 'white', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--primary-200)', fontWeight: 600, color: 'var(--primary-800)', fontSize: '0.85rem' }}>
+                            💡 <strong>Hành động đề xuất:</strong> {MOCK_CLASS_ANALYTICS.aiRecommendation.suggestedAction}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
