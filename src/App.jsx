@@ -318,7 +318,7 @@ export default function App() {
                     fileInputRef.current?.click();
                   }}
                 >
-                  <Plus size={14} /> Tải Slide lên thật
+                  <Plus size={14} /> Tải Slide
                 </button>
               </div>
 
