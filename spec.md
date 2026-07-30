@@ -11,15 +11,15 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
   - **Workflow**: Đăng nhập Web Dashboard (Next.js Platform) ➔ Upload Slide VLearn (PDF) ➔ Backend AI Provider (Gemini / OpenAI API) trích xuất kiến thức & sinh nháp bộ Quiz kèm Concept Tag ➔ Giảng viên Review/Edit (Human-in-the-Loop) ➔ Duyệt & Phát hành cho Học viên làm bài ➔ Giảng viên xem Báo cáo **Knowledge Gap Heatmap** (lưu trữ PostgreSQL) để biết chính xác phần kiến thức cần giảng lại trong 3 phút.
 - **Core JTBD**: Khi Giảng viên cần kiểm tra mức độ hiểu bài của lớp, họ muốn tạo bộ Quiz chuẩn hóa và nhận báo cáo phân tích lỗ hổng kiến thức chính xác ngay lập tức để điều chỉnh bài giảng tiếp theo mà không mất quá nhiều thời gian tự soạn từng câu hỏi.
 - **Problem statement (KHÔNG chữ AI)**: Giảng viên mất từ 1 đến 2 tiếng mỗi tuần để tự tìm ý tưởng, viết câu hỏi trắc nghiệm và đáp án nhiễu từ slide bài giảng, nhưng sau khi cho làm bài chỉ biết được điểm số tổng quan của từng học viên chứ không thể đo lường lớp học đang bị hổng hoặc hiểu sai ở khái niệm kiến thức cụ thể nào.
-- **Evidence (chuẩn A & B — log lưu trong repo tại `data/vlearn-pack/chatlog/` & `backend/`)**:
+- **Evidence (chuẩn A & B — log lưu trong repo tại `data/vlearn-pack/chatlog/`, `evidence/survey_log.md` & `backend/`)**:
   - **Số liệu Mining (Chuẩn B)**: Phân tích tệp dữ liệu chatlog thực tế `chat_history_anonymized_for_hackathon.csv` gồm 1,261 lượt hỏi-đáp giữa học viên và AI Tutor VLearn. Lọc ra 420 lượt tin nhắn thắc mắc/nhầm lẫn kiến thức nhưng chưa bao giờ được đưa vào bài kiểm tra định kỳ.
-  - **Số liệu Khảo sát (Chuẩn A)**: Khảo sát N = 24 giảng viên & tutor ngoài nhóm: 83.3% (20/24) xác nhận tốn >60 phút soạn quiz/tuần; 91.6% (22/24) rất khó nắm bắt chính xác lỗ hổng kiến thức lớp học; 100% (24/24) muốn có bước kiểm duyệt trước khi phân phối bài quiz.
-  - **≥5 quotes/ví dụ nguyên văn từ chatlog thật**:
-    1. *U0067 (Turn T0649)*: "Tôi không hiểu đoạn trích về Dense Retrieval và Sparse Retrieval trong slide 37, thầy giải thích lại giúp tôi."
-    2. *U0031 (Turn T0959)*: "Có bao nhiêu chiến lược tối ưu Prompt trong slide trang 45 vậy tutor?"
-    3. *U0215 (Turn T0412)*: "MMR trong slide có nghĩa là Maximal Marginal Relevance hay Multi-Modal Retrieval?"
-    4. *U0144 (Turn T0833)*: "Tại sao đặt Temperature = 0 mà mô hình vẫn sinh ra câu trả lời hơi khác nhau?"
-    5. *U0055 (Turn T0150)*: "Ảo giác AI (Hallucination) là gì và làm sao để RAG hạn chế được nó?"
+  - **Số liệu Khảo sát (Chuẩn A)**: Khảo sát N = 23 người dùng ngoài nhóm (lưu log tại `evidence/survey_log.md`): **82.6% (19/23)** xác nhận tốn >60 phút soạn quiz/tuần (Q2); **91.3% (21/23)** rất khó nắm bắt chính xác lỗ hổng kiến thức lớp học (Q4); **87.0% (20/23)** sẵn sàng dùng AI đọc slide sinh quiz (Q5); và **95.6% (22/23)** bắt buộc phải có bước kiểm duyệt trước khi phân phối bài quiz (Q6).
+  - **≥5 quotes/ví dụ nguyên văn từ khảo sát & chatlog thật**:
+    1. *Giảng viên (Khảo sát ID17)*: "Mong hệ thống trích dẫn rõ câu hỏi đó lấy từ trang slide số mấy để giảng viên tiện tra cứu lại bài giảng khi duyệt câu hỏi."
+    2. *Giảng viên (Khảo sát ID18)*: "Nếu AI có thể gợi ý sẵn câu giải thích ngắn cho từng đáp án sai để học viên đọc xong hiểu luôn tại sao mình chọn sai thì tốt quá."
+    3. *Giảng viên (Khảo sát ID20)*: "Nên cho phép tùy chỉnh tỷ lệ giữa câu hỏi nhận biết (dễ) và câu hỏi phân tích/vận dụng (khó) trước khi AI sinh đề."
+    4. *Học viên (Khảo sát ID19)*: "Em mong muốn sau khi nộp bài Quiz sẽ có luôn biểu đồ tóm tắt những khái niệm em còn yếu để biết đường tự ôn lại."
+    5. *Chatlog thật (U0067)*: "Tôi không hiểu đoạn trích về Dense Retrieval và Sparse Retrieval trong slide 37, thầy giải thích lại giúp tôi."
 
 ---
 
@@ -81,7 +81,7 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
 |---|---|
 | **HAX G1: Make clear what the system can do** | Tại Màn hình Upload Slide (trên Next.js Web UI), hiển thị rõ ràng AI có khả năng đọc Slide PDF, trích xuất khái niệm và tự động gán tag độ khó / dạng câu hỏi. |
 | **HAX G2: Make clear how well the system can do what it does** | Gán **Badge cảnh báo ⚠️ Low Confidence** trực tiếp trên các thẻ câu hỏi mà AI nhận thấy Slide mỏng văn bản hoặc ngữ cảnh mập mờ. |
-| **HAX G9: Support efficient correction** | Thiết kế nút **[Chỉnh sửa inline / Modal Edit]** và **[Regenerate câu hỏi]** cho phép Giảng viên sửa nhanh nội dung, đáp án hoặc lời giải thích chỉ bằng 1-click. |
+| **HAX G3: Support efficient correction** | Thiết kế nút **[Chỉnh sửa inline / Modal Edit]** và **[Regenerate câu hỏi]** cho phép Giảng viên sửa nhanh nội dung, đáp án hoặc lời giải thích chỉ bằng 1-click. |
 | **PAIR: Give control back to the user** | Nút **[Phê duyệt & Phát hành Quiz]** bắt buộc Giảng viên bấm thì bài kiểm tra mới được gửi tới học viên, không tự động phát hành ngầm. |
 
 ---
@@ -150,3 +150,4 @@ Loại: [x] Tính năng mới  [ ] Tối ưu tính năng có sẵn
 | 30/07 14:00 | Bổ sung nút Edit inline & Badge ⚠️ Low Confidence | Từ feedback khảo sát: 100% Giảng viên muốn kiểm duyệt câu hỏi trước khi gửi. |
 | 30/07 15:30 | Thêm bộ Golden Set 20 cases vào `eval/` | Chuẩn bị artifact cho Checkpoint 3 & Checkpoint 4. |
 | 30/07 16:20 | Đồng bộ kiến trúc Microservices (Next.js + Express + Postgres + Docker) & Cập nhật Eval Lượt 1 (90.0% Pass) | Gộp mã nguồn mới từ Backend & Frontend team. |
+| 30/07 16:30 | Cập nhật Survey Log (N = 23) và cắt 5 Quote nguyên văn đắt giá | Thu thập đầy đủ bằng chứng Chuẩn A cho Rubric R1. |
