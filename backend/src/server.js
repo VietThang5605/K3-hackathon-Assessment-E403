@@ -128,22 +128,37 @@ app.delete('/api/documents/:id', async (req, res) => {
 app.post('/api/generate-quiz', async (req, res) => {
   try {
     const { documentId, slideTitle, numQuestions, provider } = req.body;
+    const selectedProvider = provider || process.env.DEFAULT_AI_PROVIDER || 'gemini';
+
+    console.log(`\n🚀 [Backend API] Nhận yêu cầu sinh Quiz từ Frontend:`);
+    console.log(`   - Slide: "${slideTitle || 'Bài 4: RAG Architecture'}" (Doc ID: ${documentId || 'Mặc định'})`);
+    console.log(`   - Số câu: ${numQuestions || 5}`);
+    console.log(`   - AI Provider được chọn ban đầu: [${selectedProvider.toUpperCase()}]`);
+
     const draftQuiz = await teacherAgent.generateDraftQuiz({
       documentId,
       slideTitle: slideTitle || 'Bài 4: RAG Architecture',
       numQuestions: numQuestions || 5,
-      provider: provider || process.env.DEFAULT_AI_PROVIDER || 'gemini'
+      provider: selectedProvider
     });
+
+    // draftQuiz.provider reflects the actual provider that succeeded (may be fallback)
+    const actualProvider = draftQuiz.provider || selectedProvider;
+    const usedFallback = actualProvider !== selectedProvider;
+    if (usedFallback) {
+      console.log(`   ⚡ Fallback: ${selectedProvider.toUpperCase()} thất bại → Đã dùng ${actualProvider.toUpperCase()} thay thế`);
+    }
+    console.log(`   ✅ Sinh thành công ${draftQuiz.questions.length} câu hỏi trắc nghiệm qua Model thật: [${actualProvider.toUpperCase()}]\n`);
 
     res.json({
       success: true,
       quizId: draftQuiz.id,
       quizList: draftQuiz.questions,
       generatedCount: draftQuiz.questions.length,
-      provider: provider || 'gemini'
+      provider: actualProvider
     });
   } catch (error) {
-    console.error('Error generating quiz:', error);
+    console.error('❌ Error generating quiz:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -200,7 +215,9 @@ app.get('/api/quizzes/:id/heatmap', async (req, res) => {
   }
 });
 
-// Route: Eval Execution (Golden Set Runner)
+const { evaluateCaseWithGPT4o } = require('./services/liveEvaluator');
+
+// Route: Eval Execution (Golden Set Runner via GPT-4o Judge)
 app.post('/api/eval/run', async (req, res) => {
   try {
     const { caseId, runAll } = req.body;
@@ -211,30 +228,99 @@ app.post('/api/eval/run', async (req, res) => {
       cases = JSON.parse(fs.readFileSync(goldenSetPath, 'utf8'));
     }
 
+    console.log(`\n🧪 [Backend API] Nhận yêu cầu chạy Eval Benchmark từ Frontend:`);
+    console.log(`   - Mục tiêu: ${runAll ? 'CHẠY TẤT CẢ 20 CASES' : `CHẠY 1 CASE [${caseId}]`}`);
+    console.log(`   - Model Giám Khảo: GPT-4o (OpenAI LLM-as-a-Judge)`);
+
     if (runAll) {
+      let passCount = 0;
+      let failCount = 0;
+      const results = [];
+      let index = 0;
+
+      for (const c of cases) {
+        index++;
+        console.log(`   ⏳ [${index}/${cases.length}] Đang chấm Live cho [${c.id}] - ${c.title}...`);
+        const evalResult = await evaluateCaseWithGPT4o({ testCase: c, generatedQuiz: c.sampleQuiz, preferredProvider: 'openai' });
+        
+        if (evalResult.status === 'PASS') passCount++;
+        else failCount++;
+
+        console.log(`   ✓ [${index}/${cases.length}] [${c.id}]: ${evalResult.status} (${evalResult.score})`);
+
+        results.push({
+          id: c.id,
+          layer: c.layer,
+          title: c.title,
+          status: evalResult.status,
+          score: evalResult.score,
+          reason: evalResult.reason,
+          judgeModel: evalResult.judgeModel,
+          executedAt: new Date().toISOString()
+        });
+      }
+
+      const passRate = ((passCount / cases.length) * 100).toFixed(1) + '%';
+      console.log(`   🎉 ĐÃ HOÀN THÀNH CHẤM 20/20 CASES! Tỉ lệ Pass: ${passCount}/${cases.length} (${passRate})\n`);
+
+      // Persist results to results_run_1.json
+      const summary = {
+        timestamp: new Date().toISOString(),
+        judgeModel: 'OpenAI GPT-4o',
+        generatorModel: 'OpenAI GPT-4o Mini',
+        totalCases: cases.length,
+        passCount,
+        failCount,
+        passRate,
+        results
+      };
+      fs.writeFileSync(path.join(__dirname, '../eval/results_run_1.json'), JSON.stringify(summary, null, 2), 'utf8');
+
       return res.json({
         success: true,
-        message: `Ran eval suite for all ${cases.length || 20} cases`,
-        totalCases: cases.length || 20,
-        passCount: 17,
-        failCount: 3,
-        passRate: '85%'
+        message: `Ran GPT-4o live eval suite for all ${cases.length} cases`,
+        judgeModel: 'OpenAI GPT-4o',
+        totalCases: cases.length,
+        passCount,
+        failCount,
+        passRate,
+        results
       });
     }
 
-    const targetCase = cases.find(c => c.id === caseId) || { id: caseId, layer: 'HAPPY_PATH' };
-    const isFail = targetCase.id === 'CASE-12' || targetCase.id === 'CASE-16';
-    
+    const targetCase = cases.find(c => c.id === caseId) || { id: caseId, layer: 'HAPPY_PATH', title: 'Case ' + caseId };
+    const evalResult = await evaluateCaseWithGPT4o({ testCase: targetCase, generatedQuiz: targetCase.sampleQuiz, preferredProvider: 'openai' });
+
+    console.log(`   ✓ Đã chấm xong [${caseId}]: Status: ${evalResult.status} | Score: ${evalResult.score}`);
+    console.log(`   - Lý do: ${evalResult.reason}\n`);
+
     return res.json({
       success: true,
       caseId,
-      status: isFail ? 'FAIL' : 'PASS',
-      score: isFail ? (targetCase.id === 'CASE-12' ? '40%' : '20%') : '100%',
-      executedAt: new Date().toISOString()
+      status: evalResult.status,
+      score: evalResult.score,
+      reason: evalResult.reason,
+      judgeModel: evalResult.judgeModel || 'gpt-4o (OpenAI)'
     });
   } catch (error) {
-    console.error('Error running eval:', error);
+    console.error('❌ Error running eval:', error.message);
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// GET Live Eval Results
+app.get('/api/eval/results', (req, res) => {
+  try {
+    const resultsPath = path.join(__dirname, '../eval/results_run_1.json');
+    if (fs.existsSync(resultsPath)) {
+      const data = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+      return res.json({ success: true, ...data });
+    }
+    const goldenSetPath = path.join(__dirname, '../eval/golden_set.json');
+    const cases = JSON.parse(fs.readFileSync(goldenSetPath, 'utf8'));
+    res.json({ success: true, results: cases });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

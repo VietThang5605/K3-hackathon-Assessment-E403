@@ -26,21 +26,33 @@ class TeacherAgent {
     let docContent = '';
     if (documentId) {
       const doc = await dbClient.getDocumentById(documentId);
-      if (doc) docContent = doc.content_text;
+      if (doc) {
+        docContent = doc.content_text;
+        console.log(`   📄 Nội dung slide từ DB: "${slideTitle}" — ${docContent.length} ký tự`);
+      } else {
+        console.log(`   ⚠️  Slide "${slideTitle}" (ID: ${documentId}) chưa có trong DB — quiz sẽ sinh dựa trên tiêu đề slide.`);
+      }
     }
 
     // Mine student chatlogs for misconceptions
     const { minedConceptPains } = mineChatlogs();
-    const chatlogSummary = minedConceptPains.map(p => `- ${p.concept}: ${p.painDescription}`).join('\n');
+    // Only inject chatlog context when slide has real content (avoid topic drift)
+    const chatlogSummary = docContent.trim().length > 50
+      ? minedConceptPains.map(p => `- ${p.concept}: ${p.painDescription}`).join('\n')
+      : '';
 
     // Generate raw quiz questions via LLM
-    const rawQuestions = await generateQuiz({
+    const quizResult = await generateQuiz({
       slideTitle: slideTitle || 'Bài 4: RAG Architecture',
       documentContent: docContent,
       chatlogContext: chatlogSummary,
       numQuestions,
       provider
     });
+
+    // Handle both old (array) and new ({questions, provider}) return shapes
+    const rawQuestions = Array.isArray(quizResult) ? quizResult : (quizResult.questions || []);
+    const actualProvider = Array.isArray(quizResult) ? provider : (quizResult.provider || provider);
 
     const quizId = `quiz-${Date.now()}`;
     const draftQuiz = {
@@ -50,7 +62,8 @@ class TeacherAgent {
       slide_title: slideTitle || 'Bài 4: RAG Architecture',
       question_count: rawQuestions.length,
       is_published: false,
-      questions: rawQuestions
+      questions: rawQuestions,
+      provider: actualProvider
     };
 
     // Store draft in DB

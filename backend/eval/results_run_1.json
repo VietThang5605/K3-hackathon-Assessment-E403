@@ -1,97 +1,121 @@
 {
-  "timestamp": "2026-07-30T08:14:34.304Z",
+  "timestamp": "2026-07-30T09:12:52.532Z",
+  "judgeModel": "OpenAI GPT-4o",
+  "generatorModel": "Gemini 2.5 Flash / GPT-4o Mini",
   "totalCases": 20,
-  "passCount": 18,
-  "failCount": 2,
-  "passRate": "90.0%",
+  "passCount": 0,
+  "failCount": 20,
+  "passRate": "0.0%",
   "results": [
     {
       "id": "CASE-01",
       "layer": "HAPPY_PATH",
       "title": "Slide đầy đủ chữ về Chunking Overlap trong RAG",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The generated quiz does not provide sufficient options or context to assess understanding, only one option is provided in a multiple-choice format, reducing its educational value. The content does not seem to reflect the information likely contained in a slide deck specifically about 'Chunking Overlap in RAG,' a domain demanding more nuanced questions and answers.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:16.397Z"
     },
     {
       "id": "CASE-02",
       "layer": "HAPPY_PATH",
       "title": "Slide về Cosine Similarity và Vector Indexing",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The generated quiz does not accurately reflect the content of the original slide. The quiz question and options are generic placeholders, providing no meaningful challenge or educational value. Additionally, the 'concept' tag 'RAG' is unrelated to the stated topic of Cosine Similarity and Vector Indexing, and the quiz lacks proper distractors. Moreover, given the slide content is noted as thin or special format, the generator should have marked it as 'isLowConfidence'.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:18.848Z"
     },
     {
       "id": "CASE-03",
       "layer": "HAPPY_PATH",
       "title": "Slide về Few-shot Prompting & Chain of Thought",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Câu hỏi 'Sample Question' và đáp án 'Opt A' không phản ánh nội dung hoặc chủ đề của slide gốc về 'Few-shot Prompting & Chain of Thought'. Dữ liệu rất mỏng, nhưng không có nhãn 'isLowConfidence'. Thẻ khái niệm 'RAG' cũng không liên quan đến nội dung đề cập. Câu hỏi và lựa chọn nhiễu không đạt chuẩn giáo dục.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:20.714Z"
     },
     {
       "id": "CASE-04",
       "layer": "HAPPY_PATH",
       "title": "Slide về Fine-tuning vs RAG trade-offs",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Câu hỏi và đáp án không có mối liên hệ rõ ràng với nội dung liên quan đến Fine-tuning và RAG được đề cập trong slide gốc. Thẻ khái niệm (concept) chưa phù hợp vì RAG không được giải thích hoặc liên quan đến câu trả lời. Thiếu các lựa chọn nhiễu để kiểm tra sự hiểu biết của học sinh.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:22.618Z"
     },
     {
       "id": "CASE-05",
       "layer": "HAPPY_PATH",
       "title": "Slide về Hallucination Mitigation Techniques",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Câu hỏi không liên quan và không có ý nghĩa, chỉ mang tính minh hoạ nhưng không phản ánh nội dung slide. Nội dung slide theo thông tin là mỏng, nhưng Generator không gắn nhãn 'isLowConfidence': true. Thẻ khái niệm (concept) 'RAG' không rõ ràng và không có lựa chọn nhiễu nào trong câu hỏi.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:24.103Z"
     },
     {
       "id": "CASE-06",
       "layer": "HAPPY_PATH",
       "title": "Slide về Sparse vs Dense Retrieval trong Search",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "40%",
+      "reason": "The quiz contains a placeholder question 'Sample Question' with option 'Opt A', which lacks relevance and detail specific to the topic of Sparse vs Dense Retrieval in Search. The concept 'RAG' mentioned does not align with the slide's potential content and no meaningful distractors were provided.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:26.308Z"
     },
     {
       "id": "CASE-07",
       "layer": "HAPPY_PATH",
       "title": "Slide về Embedding Models (Ada, Cohere, BGE)",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "40%",
+      "reason": "Bộ câu hỏi Quiz có chứa câu hỏi và đáp án không liên quan đến nội dung slide gốc. Slide gốc chỉ là dạng 'nội dung mỏng' hoặc đặc biệt, không đủ dữ liệu để sinh ra câu hỏi có độ chính xác cao. Generator không gắn nhãn 'isLowConfidence': true, dẫn đến sai sót khi tạo câu hỏi.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:28.258Z"
     },
     {
       "id": "CASE-08",
       "layer": "HAPPY_PATH",
       "title": "Slide về Evaluation Metrics (BLEU, ROUGE, RAGAS)",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The quiz question is entirely generic and does not pertain to the content that might be expected from a slide on Evaluation Metrics such as BLEU, ROUGE, or RAGAS. Additionally, the concept label 'RAG' seems incorrect or incomplete if it was meant to reference these metrics. The slide content is noted as being sparse, suggesting that further detail would be necessary to create a meaningful quiz. The provided question doesn't meet expected educational standards for domain-specific content.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:30.760Z"
     },
     {
       "id": "CASE-09",
       "layer": "HAPPY_PATH",
       "title": "Slide về System Prompt Design Guidelines",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The quiz question generated is a placeholder ('Sample Question' and 'Opt A') with no reference to the original slide content. This suggests either an error in handling the input or a misinterpretation. Furthermore, the 'concept' tag is set to 'RAG', which does not clearly relate to known standards or guidelines for quiz creation relative to 'System Prompt Design Guidelines'. The lack of multiple options and a comprehensive question structure further detracts from domain fidelity and distractor quality.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:33.387Z"
     },
     {
       "id": "CASE-10",
       "layer": "HAPPY_PATH",
       "title": "Slide về Context Window Optimization",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The generated quiz consists only of a placeholder question ('Sample Question') and a single answer option ('Opt A') without context from the original slide. There is no connection to the topic of 'Context Window Optimization' and lacks any educational value. Also, the question does not demonstrate any understanding or convey information that would likely pertain to the original content intended to be covered in the slide.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:35.749Z"
     },
     {
       "id": "CASE-11",
       "layer": "ANTI_HALLUCINATION",
       "title": "Slide sơ đồ kiến trúc phức tạp dạng hình ảnh",
-      "status": "PASS",
-      "score": "80%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "40%",
+      "reason": "Câu hỏi và đáp án sinh ra không phản ánh nội dung của slide gốc. Câu hỏi và đáp án kiểu 'Sample Question' và 'Opt A' không mang ý nghĩa giáo dục cụ thể và không liên quan đến nội dung của slide. Slide chứa kiến trúc phức tạp nhưng không được làm rõ trong câu hỏi. Generator không gắn nhãn isLowConfidence cho nội dung mỏng chữ.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:37.574Z"
     },
     {
       "id": "CASE-12",
@@ -99,31 +123,39 @@
       "title": "Slide chứa các công thức toán học viết tắt",
       "status": "FAIL",
       "score": "40%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "reason": "The quiz contains fabricated content ('Sample Question' and 'Opt A') that is unrelated or unverifiable against the original 'thin content' slide. The concept label 'RAG' and option format do not align with educational standards, given the lack of context from the source material. Additionally, there's no indication of a 'isLowConfidence' tag, despite the slide being minimal in text.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:39.444Z"
     },
     {
       "id": "CASE-13",
       "layer": "ANTI_HALLUCINATION",
       "title": "Slide có thông số benchmark phần cứng",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "40%",
+      "reason": "Bộ câu hỏi không hợp lệ vì chỉ có một lựa chọn cho câu hỏi, không có đủ thông tin để đánh giá chính xác đáp án đúng, ngoài ra tên câu hỏi và lựa chọn đều không liên quan đến nội dung slide gốc; hơn nữa, các yếu tố như concept và distractors chưa được xây dựng đúng chuẩn giáo dục. Thiếu nhãn 'isLowConfidence' cho nội dung slide mỏng.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:41.108Z"
     },
     {
       "id": "CASE-14",
       "layer": "LOW_CONFIDENCE",
       "title": "Slide mỏng chữ (chỉ có từ 'BM25 + Hybrid')",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Quiz lacks appropriate content validity. The question is generic and unrelated to the slide topic 'BM25 + Hybrid'. It does not contain relevant information or context from the slide, and the low confidence trigger is missing.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:43.230Z"
     },
     {
       "id": "CASE-15",
       "layer": "LOW_CONFIDENCE",
       "title": "Slide chỉ có 1 dòng tiêu đề không có nội dung",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Câu hỏi và đáp án được sinh ra không dựa trên bất kỳ nội dung cụ thể nào từ Slide gốc. Ngoài ra, nhãn 'concept' không liên quan và không rõ ràng. Slide thiếu nội dung, yêu cầu gắn nhãn 'isLowConfidence': true nhưng điều này không được thực hiện.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:45.173Z"
     },
     {
       "id": "CASE-16",
@@ -131,39 +163,49 @@
       "title": "Slide chỉ chứa bullet points ký hiệu hình ảnh",
       "status": "FAIL",
       "score": "20%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "reason": "Slide mỏng chữ/chỉ chứa ký hiệu hình ảnh nhưng Generator không tự động kích hoạt Cảnh báo ⚠️ Low Confidence.",
+      "judgeModel": "Rule-Based Code Evaluator",
+      "executedAt": "2026-07-30T09:12:45.174Z"
     },
     {
       "id": "CASE-17",
       "layer": "OUT_OF_SCOPE",
       "title": "User upload file code Python .py thay vì Slide",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The generated quiz does not correspond to any valid content from the original slide as the input was a Python code file, not a slide. Furthermore, there is no indication of 'isLowConfidence' being flagged, which would be appropriate for cases where the input is not suitable for quiz content generation.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:47.614Z"
     },
     {
       "id": "CASE-18",
       "layer": "OUT_OF_SCOPE",
       "title": "User upload file báo cáo tài chính doanh nghiệp",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "Câu hỏi mẫu không có nội dung liên quan đến nội dung gốc của slide. Generator không thể tạo ra câu hỏi phù hợp do thiếu thông tin. Đáp án và lựa chọn không có cơ sở và không có chất lượng giáo dục phù hợp.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:49.000Z"
     },
     {
       "id": "CASE-19",
       "layer": "DOMAIN_CONFUSION",
       "title": "Chatlog SV nhầm lẫn Chunk Size vs Token Limit",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The generated quiz content lacks connection to the provided slide content as it appears to be not meaningful or relevant. The question 'Sample Question' with an answer 'Opt A' is too generic and does not reflect any educational value or align with the specialized slide content. Moreover, the label 'concept: RAG' is inappropriate without context. The slide being minimal suggests the quiz question should reflect domain-specific knowledge or indicate low confidence, which it does not.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:51.344Z"
     },
     {
       "id": "CASE-20",
       "layer": "DOMAIN_CONFUSION",
       "title": "Chatlog SV nhầm Cosine vs Euclidean Distance",
-      "status": "PASS",
-      "score": "100%",
-      "executedAt": "2026-07-30T08:14:34.304Z"
+      "status": "FAIL",
+      "score": "20%",
+      "reason": "The quiz contains only a sample question with an incomplete set of answer options, without proper context or correlation to the original slide content. There is also no confirmation that the slide was marked with 'isLowConfidence': true, which is necessary given the lack of information in the original slide.",
+      "judgeModel": "gpt-4o (OpenAI LLM-as-a-Judge)",
+      "executedAt": "2026-07-30T09:12:52.532Z"
     }
   ]
 }

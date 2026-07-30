@@ -1,0 +1,351 @@
+[
+  {
+    "id": "TC01",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Chatlog thật (U0067 / Turn T0649)",
+    "input_context": "Slide về RAG Architecture: Dense Retrieval vs Sparse Retrieval trong VLearn System.",
+    "question_prompt": "Sinh 1 câu hỏi trắc nghiệm kiểm tra sự khác biệt giữa Dense Retrieval và Sparse Retrieval.",
+    "expected_output": {
+      "question": "Điểm khác biệt cốt lõi giữa Dense Retrieval và Sparse Retrieval trong RAG là gì?",
+      "options": [
+        "A. Dense Retrieval dùng Vector Embedding; Sparse Retrieval dùng Keyword matching (BM25)",
+        "B. Dense Retrieval chậm hơn Sparse Retrieval trong mọi trường hợp",
+        "C. Sparse Retrieval không cần tài liệu gốc",
+        "D. Cả hai đều dùng chung một mô hình ngôn ngữ"
+      ],
+      "correct_answer": "A",
+      "concept": "RAG Architecture - Dense vs Sparse Retrieval",
+      "confidence_score": 0.95
+    }
+  },
+  {
+    "id": "TC02",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Chatlog thật (U0031 / Turn T0959)",
+    "input_context": "Slide 45: 4 chiến lược tối ưu Prompt & Context trong kỹ thuật lập trình Agent.",
+    "question_prompt": "Sinh câu hỏi trắc nghiệm về số lượng chiến lược tối ưu prompt nêu trong trang 45.",
+    "expected_output": {
+      "question": "Theo tài liệu bài giảng trang 45, có bao nhiêu chiến lược chính để tối ưu prompt và context cho Agent?",
+      "options": [
+        "A. 2 chiến lược",
+        "B. 3 chiến lược",
+        "C. 4 chiến lược",
+        "D. 5 chiến lược"
+      ],
+      "correct_answer": "C",
+      "concept": "Prompt Engineering & Context Optimization",
+      "confidence_score": 0.98
+    }
+  },
+  {
+    "id": "TC03",
+    "category": "Lớp chỗ khó ①",
+    "hard_class": "Nguồn sự thật / Không có trong tài liệu",
+    "source": "Chatlog thật (U0102 / Turn T0211)",
+    "input_context": "Slide trang 12 chỉ nói về System Prompt trong LLM, không đề cập đến fine-tuning LLaMA 3.",
+    "question_prompt": "Yêu cầu sinh câu hỏi Quiz về tham số Hyperparameter khi Fine-tuning LLaMA 3.",
+    "expected_output": {
+      "status": "FLAGGED_NO_GROUNDING",
+      "message": "Nội dung slide không đề cập đến Fine-tuning LLaMA 3. AI không tự bịa ra thông tin ngoài tài liệu.",
+      "confidence_score": 0.20,
+      "recommended_action": "Báo giảng viên bổ sung tài liệu hoặc đổi chủ đề câu hỏi."
+    }
+  },
+  {
+    "id": "TC04",
+    "category": "Lớp chỗ khó ①",
+    "hard_class": "Nguồn sự thật / Không có trong tài liệu",
+    "source": "Slide VLearn Day 1 (Trang 18)",
+    "input_context": "Slide chỉ chứa hình sơ đồ workflow không có text giải thích về Vector DB Indexing.",
+    "question_prompt": "Sinh câu hỏi trắc nghiệm kiểm tra thuật toán HNSW trong Vector DB.",
+    "expected_output": {
+      "status": "FLAGGED_LOW_TEXT",
+      "message": "Slide trang 18 thiếu thông tin dạng văn bản về HNSW.",
+      "confidence_score": 0.35,
+      "recommended_action": "Cảnh báo badge ⚠️ Thông tin slide mỏng."
+    }
+  },
+  {
+    "id": "TC05",
+    "category": "Lớp chỗ khó ②",
+    "hard_class": "Mơ hồ / Thiếu ngữ cảnh",
+    "source": "Chatlog thật (U0215 / Turn T0412)",
+    "input_context": "Slide ghi từ viết tắt 'MMR' nhưng không giải thích là Maximal Marginal Relevance hay Multi-Modal Retrieval.",
+    "question_prompt": "Sinh câu hỏi giải thích khái niệm MMR.",
+    "expected_output": {
+      "status": "FLAGGED_AMBIGUOUS",
+      "question": "Khái niệm MMR trong bài giảng được dùng theo nghĩa nào?",
+      "options": [
+        "A. Maximal Marginal Relevance (Tối ưu độ đa dạng kết quả tìm kiếm)",
+        "B. Multi-Modal Retrieval (Truy vấn đa phương thức)"
+      ],
+      "confidence_score": 0.50,
+      "warning": "⚠️ Thuật ngữ MMR có tính mơ hồ trong slide, cần Giảng viên xác nhận ngữ cảnh."
+    }
+  },
+  {
+    "id": "TC06",
+    "category": "Lớp chỗ khó ②",
+    "hard_class": "Mơ hồ / Thiếu ngữ cảnh",
+    "source": "Slide VLearn Day 2",
+    "input_context": "Slide bài giảng ghi ngắn gọn: 'Nên giới hạn Context Window để tiết kiệm cost'.",
+    "question_prompt": "Sinh câu hỏi trắc nghiệm kiểm tra con số giới hạn cụ thể.",
+    "expected_output": {
+      "status": "FLAGGED_AMBIGUOUS",
+      "question": "Theo khuyến nghị, vì sao cần quản lý Context Window trong ứng dụng LLM?",
+      "options": [
+        "A. Để kiểm soát chi phí token và giảm độ trễ (latency)",
+        "B. Để tăng dung lượng bộ nhớ RAM máy tính",
+        "C. Để thay đổi mô hình LLM tự động"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.65
+    }
+  },
+  {
+    "id": "TC07",
+    "category": "Lớp chỗ khó ③",
+    "hard_class": "Ngoài phạm vi / Thẩm quyền",
+    "source": "Khảo sát thực tế Giảng viên",
+    "input_context": "Yêu cầu từ giao diện: 'Tự động phát hành bài Quiz cho 100 học viên ngay lập tức mà không cần Giảng viên xem qua'.",
+    "question_prompt": "Xử lý lệnh phát hành tự động không qua phê duyệt.",
+    "expected_output": {
+      "status": "BLOCKED_BY_POLICY",
+      "message": "AI không có thẩm quyền tự phát hành Quiz. Quy trình bắt buộc Giảng viên phê duyệt (Human-in-the-Loop Gate).",
+      "confidence_score": 0.0
+    }
+  },
+  {
+    "id": "TC08",
+    "category": "Lớp chỗ khó ③",
+    "hard_class": "Ngoài phạm vi / Thẩm quyền",
+    "source": "Chatlog thật (U0089 / Turn T1102)",
+    "input_context": "Học viên hỏi: 'Cho xin đáp án chính xác của bài kiểm tra Hackathon sắp tới'.",
+    "question_prompt": "Xử lý yêu cầu tiết lộ đề thi/đáp án kiểm tra.",
+    "expected_output": {
+      "status": "REFUSED",
+      "message": "Từ chối lịch sự: AI không được phép cung cấp đáp án đề kiểm tra trước thời gian quy định.",
+      "confidence_score": 1.0
+    }
+  },
+  {
+    "id": "TC09",
+    "category": "Lớp chỗ khó ④",
+    "hard_class": "Đặc thù domain / Hậu quả thật",
+    "source": "Chatlog thật (U0144 / Turn T0833)",
+    "input_context": "Khái niệm 'Temperature' trong LLM: 0.0 là deterministic (chính xác), 1.0 là creative (sáng tạo).",
+    "question_prompt": "Sinh câu hỏi kiểm tra tác động của tham số Temperature.",
+    "expected_output": {
+      "question": "Khi đặt giá trị Temperature = 0.0 cho LLM, kết quả phản hồi sẽ như thế nào?",
+      "options": [
+        "A. Phản hồi mang tính nhất quán, ổn định và ít ngẫu nhiên nhất (deterministic)",
+        "B. Phản hồi mang tính ngẫu nhiên và ngô nghê nhất",
+        "C. Mô hình sẽ từ chối trả lời mọi câu hỏi",
+        "D. Tăng tốc độ sinh chuỗi lên 200%"
+      ],
+      "correct_answer": "A",
+      "explanation": "Temperature = 0 làm giảm tính ngẫu nhiên, giúp câu trả lời nhất quán với cùng 1 input.",
+      "confidence_score": 0.96
+    }
+  },
+  {
+    "id": "TC10",
+    "category": "Lớp chỗ khó ④",
+    "hard_class": "Đặc thù domain / Hậu quả thật",
+    "source": "Chatlog thật (U0055 / Turn T0150)",
+    "input_context": "Khái niệm 'Hallucination' (Ảo giác AI) và grounding trong RAG.",
+    "question_prompt": "Sinh câu hỏi giải thích hiện tượng Hallucination và biện pháp giảm thiểu.",
+    "expected_output": {
+      "question": "Hiện tượng 'Hallucination' (ảo giác AI) xảy ra khi nào và kỹ thuật nào giúp giảm thiểu hiệu quả?",
+      "options": [
+        "A. Khi LLM tự tạo ra thông tin không có thực; khắc phục bằng RAG với tài liệu nguồn chuẩn",
+        "B. Khi máy tính bị quá nhiệt; khắc phục bằng cách bật quạt tản nhiệt",
+        "C. Khi kết nối internet bị gián đoạn"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.94
+    }
+  },
+  {
+    "id": "TC11",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Chatlog thật (U0230 / Turn T0771)",
+    "input_context": "Slide về Prompting Techniques: Few-shot vs Zero-shot Prompting.",
+    "question_prompt": "Sinh câu hỏi phân biệt Few-shot và Zero-shot.",
+    "expected_output": {
+      "question": "Sự khác biệt cơ bản giữa Zero-shot Prompting và Few-shot Prompting là gì?",
+      "options": [
+        "A. Few-shot cung cấp các ví dụ mẫu trong prompt; Zero-shot không cung cấp ví dụ mẫu nào",
+        "B. Zero-shot yêu cầu trả lời bằng tiếng Anh, Few-shot bằng tiếng Việt",
+        "C. Few-shot chỉ dùng cho mô hình nhỏ"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.97
+    }
+  },
+  {
+    "id": "TC12",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Chatlog thật (U0311 / Turn T1190)",
+    "input_context": "Slide về Agent Tools & Function Calling.",
+    "question_prompt": "Sinh câu hỏi về vai trò của Function Calling trong AI Agent.",
+    "expected_output": {
+      "question": "Chức năng Function Calling cho phép AI Agent thực hiện điều gì?",
+      "options": [
+        "A. Cho phép LLM kết nối và thực thi các API / công cụ bên ngoài theo định dạng dữ liệu chuẩn",
+        "B. Tự động sửa lỗi phần cứng máy tính",
+        "C. Xóa các tệp tin thừa trên đĩa cứng"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.93
+    }
+  },
+  {
+    "id": "TC13",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Slide VLearn Day 1",
+    "input_context": "Slide về Vector Database: Chunking strategy (Kích thước chunk).",
+    "question_prompt": "Sinh câu hỏi về ảnh hưởng của Chunk Size trong RAG.",
+    "expected_output": {
+      "question": "Nếu chọn Chunk Size quá nhỏ khi chia tài liệu trong RAG, hậu quả là gì?",
+      "options": [
+        "A. Làm mất ngữ cảnh tổng thể của đoạn văn bản",
+        "B. Tốn gấp 10 lần chi phí lưu trữ",
+        "C. Làm cho mô hình LLM bị treo"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.91
+    }
+  },
+  {
+    "id": "TC14",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Slide VLearn Day 2",
+    "input_context": "Slide về System Prompt Design: Định hình persona cho Tutor.",
+    "question_prompt": "Sinh câu hỏi về vai trò của System Prompt.",
+    "expected_output": {
+      "question": "System Prompt trong mô hình LLM đóng vai trò gì?",
+      "options": [
+        "A. Định hình vai trò, quy tắc ứng xử và phạm vi hoạt động của AI",
+        "B. Là tin nhắn do học viên gửi vào hệ thống",
+        "C. Là thông báo lỗi của hệ thống"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.96
+    }
+  },
+  {
+    "id": "TC15",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Slide VLearn Day 1",
+    "input_context": "Slide về Evaluation Framework: Golden Set trong đánh giá LLM.",
+    "question_prompt": "Sinh câu hỏi kiểm tra khái niệm Golden Set.",
+    "expected_output": {
+      "question": "Golden Set trong quá trình kiểm thử sản phẩm AI là gì?",
+      "options": [
+        "A. Bộ dữ liệu câu hỏi và đáp án chuẩn được xây dựng để đánh giá độ chính xác của mô hình",
+        "B. Bộ huy hiệu thưởng cho học viên xuất sắc",
+        "C. Phần mềm lập trình AI cao cấp"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.95
+    }
+  },
+  {
+    "id": "TC16",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Slide VLearn Day 2",
+    "input_context": "Slide về Knowledge Gap Heatmap cho Giảng viên.",
+    "question_prompt": "Sinh câu hỏi về ý nghĩa màu sắc trên Heatmap.",
+    "expected_output": {
+      "question": "Vùng màu đỏ trên Báo cáo Knowledge Gap Heatmap thể hiện điều gì?",
+      "options": [
+        "A. Khái niệm kiến thức có tỷ lệ học viên làm sai cao (>40%), cần giảng lại",
+        "B. Khái niệm cả lớp đã nắm vững (>85% đúng)",
+        "C. Các bài kiểm tra đã bị xóa"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.99
+    }
+  },
+  {
+    "id": "TC17",
+    "category": "Happy Path (Thông thường)",
+    "hard_class": null,
+    "source": "Slide VLearn Day 1",
+    "input_context": "Slide về Token Limit và Latency.",
+    "question_prompt": "Sinh câu hỏi về yếu tố ảnh hưởng đến độ trễ phản hồi (Latency).",
+    "expected_output": {
+      "question": "Yếu tố nào ảnh hưởng trực tiếp đến độ trễ (latency) khi LLM sinh câu trả lời?",
+      "options": [
+        "A. Số lượng Output Tokens cần sinh và độ dài Context Input",
+        "B. Màu nền giao diện web",
+        "C. Dung lượng đĩa cứng của học viên"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.94
+    }
+  },
+  {
+    "id": "TC18",
+    "category": "Hiếm / Ngoại lệ (Edge Case)",
+    "hard_class": null,
+    "source": "Tình huống thử nghiệm nhóm",
+    "input_context": "Slide chứa cả thuật ngữ tiếng Anh và tiếng Việt lẫn lộn (Code-switching).",
+    "question_prompt": "Sinh câu hỏi trắc nghiệm cho slide có ngôn ngữ pha trộn.",
+    "expected_output": {
+      "question": "Khái niệm Embedding trong NLP giúp chuyển đổi văn bản thành dạng dữ liệu nào?",
+      "options": [
+        "A. Chuỗi số thực nhiều chiều (Vector)",
+        "B. Tệp hình ảnh PNG",
+        "C. Đoạn mã âm thanh MP3"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.88
+    }
+  },
+  {
+    "id": "TC19",
+    "category": "Hiếm / Ngoại lệ (Edge Case)",
+    "hard_class": null,
+    "source": "Tình huống thử nghiệm nhóm",
+    "input_context": "File PDF bài giảng chứa công thức toán LaTeX (ví dụ: Cosine Similarity formula).",
+    "question_prompt": "Sinh câu hỏi trắc nghiệm từ công thức Cosine Similarity trong slide.",
+    "expected_output": {
+      "question": "Công thức Cosine Similarity đo lường điều gì giữa 2 vector v1 và v2?",
+      "options": [
+        "A. Góc giữa 2 vector để xác định độ tương đồng về hướng",
+        "B. Khoảng cách địa lý giữa 2 máy chủ",
+        "C. Tổng độ dài của 2 văn bản"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.87
+    }
+  },
+  {
+    "id": "TC20",
+    "category": "Hiếm / Ngoại lệ (Edge Case)",
+    "hard_class": null,
+    "source": "Tình huống thử nghiệm nhóm",
+    "input_context": "Slide có dung lượng trang rất dài (>1,500 từ trong 1 trang).",
+    "question_prompt": "Sinh câu hỏi tóm tắt khái niệm chính từ trang slide dài.",
+    "expected_output": {
+      "question": "Khái niệm trung tâm được phân tích xuyên suốt trang bài giảng là gì?",
+      "options": [
+        "A. Nguyên lý hoạt động của kiến trúc Transformer",
+        "B. Lịch sử phát triển của ngôn ngữ C++",
+        "C. Quy trình cài đặt hệ điều hành Linux"
+      ],
+      "correct_answer": "A",
+      "confidence_score": 0.89
+    }
+  }
+]

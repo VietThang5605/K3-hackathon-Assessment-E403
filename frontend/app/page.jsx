@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   FileText, Upload, Sparkles, CheckCircle, RefreshCw, Edit3, Trash2, Plus, 
   Share2, BarChart3, AlertTriangle, Download, Clock, Users, Award, BookOpen, 
@@ -328,6 +328,37 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
+  // Load initial live eval results from Backend
+  useEffect(() => {
+    async function loadLiveEvalResults() {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${backendUrl}/api/eval/results`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.results) && data.results.length > 0) {
+            setGoldenCases(prev => prev.map(c => {
+              const liveMatch = data.results.find(r => r.id === c.id);
+              if (liveMatch) {
+                return {
+                  ...c,
+                  status: liveMatch.status || c.status,
+                  score: liveMatch.score || c.score,
+                  failReason: liveMatch.reason || liveMatch.failReason || c.failReason,
+                  judgeModel: liveMatch.judgeModel || 'gpt-4o (OpenAI)'
+                };
+              }
+              return c;
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load live eval results:', err);
+      }
+    }
+    loadLiveEvalResults();
+  }, []);
+
   // Handler: Run Single Case Eval Execution
   const handleRunSingleCaseEval = async (caseId) => {
     setRunningSingleCaseId(caseId);
@@ -341,7 +372,19 @@ export default function Home() {
       });
       if (res.ok) {
         const data = await res.json();
-        setGoldenCases(prev => prev.map(c => c.id === caseId ? { ...c, lastRun: "Vừa chạy (Backend Live)", score: data.score || '100%' } : c));
+        setGoldenCases(prev => prev.map(c => {
+          if (c.id === caseId) {
+            return {
+              ...c,
+              status: data.status || c.status,
+              score: data.score || '100%',
+              failReason: data.reason || c.failReason,
+              judgeModel: data.judgeModel || 'gpt-4o (OpenAI LLM-as-a-Judge)',
+              lastRun: `Vừa chạy xong (${new Date().toLocaleTimeString()})`
+            };
+          }
+          return c;
+        }));
         setRunningSingleCaseId(null);
         return;
       }
@@ -364,35 +407,65 @@ export default function Home() {
     }, 600);
   };
 
-  // Handler: Run All 20 Cases Eval Suite Execution
+  // Handler: Run All 20 Cases Eval Suite Execution (Sequential Live Row-by-Row Streaming)
   const handleRunAllEvalCases = async () => {
     setIsRunningAllEval(true);
-    
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    let passCount = 0;
+
+    // Mark all cases as waiting/evaluating status
+    setGoldenCases(prev => prev.map(c => ({ ...c, isEvaluating: true })));
+
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${backendUrl}/api/eval/run`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runAll: true })
-      });
-      if (res.ok) {
-        setGoldenCases(prev => prev.map(c => ({ ...c, lastRun: "Vừa chạy (Backend Live)" })));
-        setIsRunningAllEval(false);
-        alert("Đã hoàn thành chạy bài đo Eval tự động từ Backend qua 20 Cases!");
-        return;
+      for (const c of goldenCases) {
+        setRunningSingleCaseId(c.id);
+        
+        try {
+          const res = await fetch(`${backendUrl}/api/eval/run`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ caseId: c.id })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status === 'PASS') passCount++;
+
+            // Update THIS SPECIFIC ROW immediately on the Web UI!
+            setGoldenCases(prev => prev.map(item => {
+              if (item.id === c.id) {
+                return {
+                  ...item,
+                  status: data.status || item.status,
+                  score: data.score || '100%',
+                  failReason: data.reason || item.failReason,
+                  judgeModel: data.judgeModel || 'gpt-4o (OpenAI LLM-as-a-Judge)',
+                  isEvaluating: false,
+                  lastRun: `Vừa chạy xong (${new Date().toLocaleTimeString()})`
+                };
+              }
+              return item;
+            }));
+          }
+        } catch (err) {
+          console.warn(`Error running case ${c.id}:`, err);
+          setGoldenCases(prev => prev.map(item => item.id === c.id ? { ...item, isEvaluating: false } : item));
+        }
       }
+
+      setRunningSingleCaseId(null);
+      setIsRunningAllEval(false);
+      const total = goldenCases.length || 20;
+      const passRate = ((passCount / total) * 100).toFixed(1);
+      alert(`🎉 Đã hoàn thành chạy bài đo Live Eval từ GPT-4o cho 20 Cases! Tỉ lệ đạt: ${passCount}/${total} Pass (${passRate}%).`);
+      return;
     } catch (e) {
-      console.warn('Backend eval suite not reachable, using fallback:', e);
+      console.warn('Backend eval suite error:', e);
     }
 
-    setTimeout(() => {
-      setGoldenCases(prev => prev.map(c => ({
-        ...c,
-        lastRun: "Vừa chạy toàn bộ"
-      })));
-      setIsRunningAllEval(false);
-      alert("Đã hoàn thành chạy bài đo Eval tự động cho toàn bộ 20 Cases! Tỉ lệ đạt: 17/20 Cases Pass (85%).");
-    }, 1200);
+    setRunningSingleCaseId(null);
+    setIsRunningAllEval(false);
+    setGoldenCases(prev => prev.map(c => ({ ...c, isEvaluating: false })));
   };
 
   // Filtered Golden Cases for Eval Tab
@@ -1335,28 +1408,40 @@ export default function Home() {
                             {c.failReason && <div style={{ fontSize: '0.75rem', color: 'var(--red-text)' }}>⚠️ {c.failReason}</div>}
                           </td>
                           <td>
-                            <span style={{
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '12px',
-                              background: c.status === 'PASS' ? 'var(--green-bg)' : 'var(--red-bg)',
-                              color: c.status === 'PASS' ? 'var(--green-text)' : 'var(--red-text)',
-                              border: `1px solid ${c.status === 'PASS' ? 'var(--green-border)' : 'var(--red-border)'}`
-                            }}>
-                              {c.status}
-                            </span>
+                            {c.isEvaluating || runningSingleCaseId === c.id ? (
+                              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--primary-600)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: 'var(--primary-50)', padding: '0.2rem 0.5rem', borderRadius: '12px', border: '1px solid var(--primary-200)' }}>
+                                <RefreshCw size={12} className="animate-spin" /> Đang chấm GPT-4o...
+                              </span>
+                            ) : (
+                              <span style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '12px',
+                                background: c.status === 'PASS' ? 'var(--green-bg)' : 'var(--red-bg)',
+                                color: c.status === 'PASS' ? 'var(--green-text)' : 'var(--red-text)',
+                                border: `1px solid ${c.status === 'PASS' ? 'var(--green-border)' : 'var(--red-border)'}`
+                              }}>
+                                {c.status}
+                              </span>
+                            )}
                           </td>
-                          <td style={{ fontWeight: 700 }}>{c.score}</td>
+                          <td style={{ fontWeight: 700 }}>
+                            {c.isEvaluating || runningSingleCaseId === c.id ? (
+                              <span style={{ color: 'var(--text-muted)' }}>...</span>
+                            ) : (
+                              c.score
+                            )}
+                          </td>
                           <td>
                             <button
                               className="btn btn-outline"
                               style={{ padding: '0.3rem 0.65rem', fontSize: '0.75rem' }}
-                              disabled={runningSingleCaseId === c.id}
+                              disabled={c.isEvaluating || runningSingleCaseId === c.id || isRunningAllEval}
                               onClick={() => handleRunSingleCaseEval(c.id)}
                             >
-                              {runningSingleCaseId === c.id ? (
-                                <> <RefreshCw size={12} className="animate-spin" /> Đang chạy... </>
+                              {runningSingleCaseId === c.id || c.isEvaluating ? (
+                                <> <RefreshCw size={12} className="animate-spin" /> Đang chấm... </>
                               ) : (
                                 <> <Play size={12} /> ▶ Chạy Case Này </>
                               )}
