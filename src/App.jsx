@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   FileText, Upload, Sparkles, CheckCircle, RefreshCw, Edit3, Trash2, Plus, 
   Share2, BarChart3, AlertTriangle, Download, Clock, Users, Award, BookOpen, 
-  ArrowRight, ArrowLeft, Check, HelpCircle, Eye
+  ArrowRight, ArrowLeft, Check, HelpCircle, Eye, Search, ArrowUpDown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { 
   SAMPLE_SLIDES, INITIAL_QUIZ, ALTERNATIVE_QUESTIONS_POOL, MOCK_CLASS_ANALYTICS 
@@ -10,6 +10,7 @@ import {
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [slideList, setSlideList] = useState(SAMPLE_SLIDES);
   const [selectedSlide, setSelectedSlide] = useState(SAMPLE_SLIDES[0]);
   const [quizList, setQuizList] = useState(INITIAL_QUIZ);
   const [editingQuestion, setEditingQuestion] = useState(null);
@@ -17,6 +18,18 @@ export default function App() {
   const [studentAnswers, setStudentAnswers] = useState({});
   const [studentSubmitted, setStudentSubmitted] = useState(false);
   const [altPoolIndex, setAltPoolIndex] = useState(0);
+
+  // File Upload Ref
+  const fileInputRef = useRef(null);
+
+  // Student Roster Controls (Step 5)
+  const [showStudentList, setShowStudentList] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [sortField, setSortField] = useState('score');
+  const [sortDirection, setSortDirection] = useState('asc'); // asc: low score first
+  const [pageSize, setPageSize] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Stepper labels
   const steps = [
@@ -26,6 +39,24 @@ export default function App() {
     { number: 4, label: "Làm thử (Giao diện Học viên)" },
     { number: 5, label: "Heatmap Lỗ hổng (Báo cáo)" }
   ];
+
+  // Handler: Real File Upload simulation
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const newSlide = {
+      id: `uploaded-${Date.now()}`,
+      title: file.name,
+      pages: Math.floor(Math.random() * 20) + 15,
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      uploadTime: "Vừa tải lên",
+      course: "K3-AI Product Architecture",
+      author: "Giảng viên"
+    };
+    setSlideList(prev => [newSlide, ...prev]);
+    setSelectedSlide(newSlide);
+    alert(`Đã tải lên thành công file: "${file.name}"! Slide đã được chọn để sinh Quiz.`);
+  };
 
   // Handler: Start AI Generation
   const handleGenerateQuiz = () => {
@@ -60,7 +91,7 @@ export default function App() {
       if (q.id === targetId) {
         return {
           ...replacement,
-          id: targetId // keep original ID slot
+          id: targetId
         };
       }
       return q;
@@ -89,7 +120,7 @@ export default function App() {
     setQuizList(prev => [...prev, newQ]);
   };
 
-  // Handler: Export CSV Report (Requested by user)
+  // Handler: Export CSV Report
   const handleExportCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += "STT,Khai niem / Concept,Muc do Lo hong,Ty le Lam Sai (%),So SV Sai,Top Cau Hoi Sai\n";
@@ -108,8 +139,68 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  // Filtered & Sorted Student List for Step 5
+  const filteredAndSortedStudents = useMemo(() => {
+    let result = [...MOCK_CLASS_ANALYTICS.studentsList];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      result = result.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
+    // Status filter
+    if (statusFilter !== 'ALL') {
+      result = result.filter(s => s.status === statusFilter);
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      let valA = a[sortField];
+      let valB = b[sortField];
+
+      if (sortField === 'score') {
+        return sortDirection === 'asc' ? valA - valB : valB - valA;
+      }
+      if (sortField === 'name') {
+        return sortDirection === 'asc' ? valA.localeCompare(valB, 'vi') : valB.localeCompare(valA, 'vi');
+      }
+      if (sortField === 'time') {
+        return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [searchQuery, statusFilter, sortField, sortDirection]);
+
+  // Paginated Students
+  const totalPages = Math.ceil(filteredAndSortedStudents.length / pageSize) || 1;
+  const paginatedStudents = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAndSortedStudents.slice(start, start + pageSize);
+  }, [filteredAndSortedStudents, currentPage, pageSize]);
+
+  // Sort toggle handler
+  const toggleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Hidden File Input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+        accept=".pdf,.pptx,.ppt" 
+        style={{ display: 'none' }} 
+      />
+
       {/* Header */}
       <header className="app-header">
         <div className="header-container">
@@ -124,7 +215,7 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--primary-700)', background: 'var(--primary-50)', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid var(--primary-200)' }}>
-              🎯 Lớp: K3 - AI Product Hackathon
+              🎯 Lớp: K3 - AI Product Architecture
             </span>
           </div>
         </div>
@@ -164,12 +255,12 @@ export default function App() {
                 Bước 1: Chọn Tài Liệu Bài Giảng (Slide vLearn)
               </div>
               <div className="card-subtitle">
-                Hệ thống RAG sẽ tự động quét Slide và khai phá các câu hỏi thắc mắc thực tế để tạo bộ Quiz kiểm tra.
+                Hệ thống RAG sẽ tự động quét Slide để trích xuất tri thức và tạo bộ Quiz kiểm tra.
               </div>
 
               {/* Sample Slide Selectors */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                {SAMPLE_SLIDES.map((slide) => (
+                {slideList.map((slide) => (
                   <div 
                     key={slide.id}
                     onClick={() => setSelectedSlide(slide)}
@@ -198,35 +289,50 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Upload Drag Area (Simulated) */}
-              <div style={{
-                border: '2px dashed var(--primary-200)',
-                background: 'var(--primary-50)',
-                borderRadius: 'var(--radius-md)',
-                padding: '2rem',
-                textAlign: 'center',
-                marginBottom: '1.5rem'
-              }}>
+              {/* Upload Button Area */}
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  border: '2px dashed var(--primary-200)',
+                  background: 'var(--primary-50)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '2rem',
+                  textAlign: 'center',
+                  marginBottom: '1.5rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
                 <Upload size={36} color="var(--primary-600)" style={{ margin: '0 auto 0.5rem auto', display: 'block' }} />
-                <p style={{ fontWeight: 600, color: 'var(--text-main)', fontSize: '0.95rem' }}>
-                  Kéo & thả file Slide PDF/PPTX mới vào đây
+                <p style={{ fontWeight: 700, color: 'var(--primary-700)', fontSize: '1rem', marginBottom: '0.25rem' }}>
+                  Bấm vào đây để Chọn & Tải Slide từ máy tính
                 </p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                  Hỗ trợ định dạng PDF, PPTX (Dung lượng tối đa 50MB)
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Hỗ trợ các định dạng PDF, PPTX (Dung lượng tối đa 50MB)
                 </p>
+                <button 
+                  className="btn btn-primary"
+                  style={{ marginTop: '0.75rem', padding: '0.45rem 1rem', fontSize: '0.85rem' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  <Plus size={14} /> Tải Slide lên thật
+                </button>
               </div>
 
-              {/* Quiz Generation Parameters */}
+              {/* Quiz Generation Parameters (Simplified: Removed Nguon thac mac bo sung) */}
               <div style={{ background: 'var(--bg-subtle)', padding: '1.25rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem' }}>
                 <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.8rem', color: 'var(--text-main)' }}>
                   ⚙️ Cấu hình bộ Quiz nháp:
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
                     <label className="form-label">Số lượng câu hỏi</label>
                     <select className="form-select" defaultValue="5">
-                      <option value="5">5 câu (Khuyên dùng - 3 phút)</option>
-                      <option value="10">10 câu (Bài kiểm tra 15p)</option>
+                      <option value="5">5 câu (Khuyên dùng - Kiểm tra nhanh 3 phút)</option>
+                      <option value="10">10 câu (Bài kiểm tra 15 phút)</option>
                     </select>
                   </div>
                   <div>
@@ -235,10 +341,6 @@ export default function App() {
                       <option value="medium">Cân bằng (Thông hiểu + Vận dụng)</option>
                       <option value="easy">Cơ bản (Nhận biết)</option>
                     </select>
-                  </div>
-                  <div>
-                    <label className="form-label">Nguồn thắc mắc bổ sung</label>
-                    <input className="form-input" value="chat_history_anonymized.csv (Active)" disabled />
                   </div>
                 </div>
               </div>
@@ -284,11 +386,11 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Warning Notice for Human Review */}
+              {/* Warning Notice (Removed "Quy trinh Human-in-the-loop:" prefix) */}
               <div style={{ background: 'var(--yellow-bg)', border: '1px solid var(--yellow-border)', padding: '0.85rem 1.2rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <AlertTriangle size={24} color="var(--yellow-text)" />
-                <div style={{ fontSize: '0.85rem', color: 'var(--yellow-text)' }}>
-                  <strong>Quy trình Human-in-the-loop:</strong> Vui lòng xem kỹ các câu hỏi được đánh dấu badge <span className="warning-badge">⚠️ Low Confidence</span> trước khi bấm Phát hành cho sinh viên.
+                <div style={{ fontSize: '0.875rem', color: 'var(--yellow-text)', fontWeight: 500 }}>
+                  Vui lòng xem kỹ các câu hỏi được đánh dấu badge <span className="warning-badge">⚠️ Low Confidence</span> trước khi bấm Phát hành cho sinh viên.
                 </div>
               </div>
 
@@ -378,14 +480,14 @@ export default function App() {
         {currentStep === 3 && (
           <div>
             <div className="card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-              <div style={{ width: '64px', height: '64px', background: 'var(--primary-50)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', margin: '0 auto 1rem auto', color: 'var(--primary-600)' }}>
+              <div style={{ width: '64px', height: '64px', background: 'var(--primary-50)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem auto', color: 'var(--primary-600)' }}>
                 <CheckCircle size={36} />
               </div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.5rem' }}>
                 Bộ Quiz Đã Được Phê Duyệt & Phát Hành!
               </h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
-                Bộ kiểm tra đã sẵn sàng cho sinh viên lớp <strong>K3-AI Product Hackathon</strong> trên VLearn Student Web Portal.
+                Bộ kiểm tra đã sẵn sàng cho sinh viên lớp <strong>K3-AI Product Architecture</strong> trên VLearn Student Web Portal.
               </p>
 
               <div style={{ background: 'var(--primary-50)', border: '1px dashed var(--primary-300)', padding: '1.5rem', borderRadius: 'var(--radius-md)', maxWidth: '500px', margin: '0 auto 2rem auto' }}>
@@ -407,7 +509,7 @@ export default function App() {
                   <Eye size={16} /> Xem Giao diện Học viên Làm bài
                 </button>
                 <button className="btn btn-primary" onClick={() => setCurrentStep(5)} style={{ padding: '0.75rem 1.5rem' }}>
-                  <BarChart3 size={18} /> Giả lập 25 SV Nộp bài ➔ Xem Heatmap Lỗ hổng <ArrowRight size={18} />
+                  <BarChart3 size={18} /> Giả lập 24 SV Nộp bài ➔ Xem Heatmap Lỗ hổng <ArrowRight size={18} />
                 </button>
               </div>
             </div>
@@ -471,7 +573,7 @@ export default function App() {
                   className="btn btn-primary"
                   onClick={() => {
                     setStudentSubmitted(true);
-                    alert("Đã hoàn thành làm thử bài Quiz! Chuyển sang Màn hình Báo cáo Heatmap cho Giảng viên.");
+                    alert("Đã nộp bài Quiz! Chuyển tới Màn hình Báo cáo Heatmap cho Giảng viên.");
                     setCurrentStep(5);
                   }}
                 >
@@ -603,62 +705,173 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Detailed Student Roster Table */}
-              <div style={{ marginTop: '2rem' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-                  👥 Danh sách Chi Tiết Học Viên (Sample 8 SV)
-                </h4>
-                <div style={{ overflowX: 'auto' }}>
-                  <table className="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Họ & Tên Sinh Viên</th>
-                        <th>Điểm Số</th>
-                        <th>Thời Gian</th>
-                        <th>Khái Niệm Làm Sai</th>
-                        <th>Trạng Thái</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {MOCK_CLASS_ANALYTICS.studentsList.map((st) => (
-                        <tr key={st.id}>
-                          <td style={{ fontWeight: 600 }}>{st.name}</td>
-                          <td>
-                            <strong style={{ color: st.score < 5 ? 'var(--red-text)' : st.score >= 8 ? 'var(--green-text)' : 'inherit' }}>
-                              {st.score.toFixed(1)} / 10
-                            </strong>
-                          </td>
-                          <td>{st.time}</td>
-                          <td>
-                            {st.wrongConcepts.length > 0 ? (
-                              st.wrongConcepts.map(c => (
-                                <span key={c} style={{ fontSize: '0.75rem', background: 'var(--red-bg)', color: 'var(--red-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', marginRight: '0.3rem' }}>
-                                  {c}
-                                </span>
-                              ))
-                            ) : (
-                              <span style={{ fontSize: '0.75rem', background: 'var(--green-bg)', color: 'var(--green-text)', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>
-                                Không sai câu nào
-                              </span>
-                            )}
-                          </td>
-                          <td>
-                            <span style={{
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '12px',
-                              background: st.status.includes('hỗ trợ') || st.status.includes('Nguy cơ') ? 'var(--red-bg)' : 'var(--bg-subtle)',
-                              color: st.status.includes('hỗ trợ') || st.status.includes('Nguy cơ') ? 'var(--red-text)' : 'var(--text-secondary)'
-                            }}>
-                              {st.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {/* Detailed Student Roster Section with Controls */}
+              <div style={{ marginTop: '2.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Users size={20} color="var(--primary-600)" />
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                      Danh Sách Chi Tiết Học Viên ({filteredAndSortedStudents.length} kết quả)
+                    </h4>
+                  </div>
+                  
+                  {/* Toggle Show/Hide Student List */}
+                  <button 
+                    className="btn btn-outline" 
+                    onClick={() => setShowStudentList(prev => !prev)}
+                    style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                  >
+                    {showStudentList ? (
+                      <> <ChevronUp size={16} /> Ẩn Danh Sách </>
+                    ) : (
+                      <> <ChevronDown size={16} /> Hiện Danh Sách Chi Tiết </>
+                    )}
+                  </button>
                 </div>
+
+                {showStudentList && (
+                  <div>
+                    {/* Controls Bar: Search, Status Filter, Items per Page */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr', gap: '1rem', marginBottom: '1rem', background: 'var(--bg-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)' }}>
+                      {/* Search Bar */}
+                      <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <input 
+                          type="text"
+                          className="form-input"
+                          style={{ paddingLeft: '2.2rem' }}
+                          placeholder="Tìm kiếm theo tên sinh viên..."
+                          value={searchQuery}
+                          onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                        />
+                      </div>
+
+                      {/* Status Filter */}
+                      <div>
+                        <select 
+                          className="form-select"
+                          value={statusFilter}
+                          onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                          <option value="ALL">Tất cả trạng thái (24 SV)</option>
+                          <option value="Nguy cơ cao">🔴 Nguy cơ cao</option>
+                          <option value="Cần hỗ trợ">🟡 Cần hỗ trợ</option>
+                          <option value="Trung bình">🔵 Trung bình</option>
+                          <option value="Khá">🟢 Khá</option>
+                          <option value="Xuất sắc">⭐ Xuất sắc</option>
+                        </select>
+                      </div>
+
+                      {/* Items Per Page */}
+                      <div>
+                        <select 
+                          className="form-select"
+                          value={pageSize}
+                          onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                        >
+                          <option value={5}>5 SV / trang</option>
+                          <option value={10}>10 SV / trang</option>
+                          <option value={25}>Xem tất cả (24 SV)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Interactive Table with Sorting */}
+                    <div style={{ overflowX: 'auto', background: 'white', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th onClick={() => toggleSort('name')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                              Họ & Tên Sinh Viên <ArrowUpDown size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                            </th>
+                            <th onClick={() => toggleSort('score')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                              Điểm Số <ArrowUpDown size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                            </th>
+                            <th onClick={() => toggleSort('time')} style={{ cursor: 'pointer', userSelect: 'none' }}>
+                              Thời Gian <ArrowUpDown size={14} style={{ display: 'inline', marginLeft: '4px' }} />
+                            </th>
+                            <th>Khái Niệm Làm Sai</th>
+                            <th>Trạng Thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedStudents.length > 0 ? (
+                            paginatedStudents.map((st) => (
+                              <tr key={st.id}>
+                                <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{st.name}</td>
+                                <td>
+                                  <strong style={{ color: st.score < 5 ? 'var(--red-text)' : st.score >= 8 ? 'var(--green-text)' : 'inherit' }}>
+                                    {st.score.toFixed(1)} / 10
+                                  </strong>
+                                </td>
+                                <td>{st.time}</td>
+                                <td>
+                                  {st.wrongConcepts.length > 0 ? (
+                                    st.wrongConcepts.map(c => (
+                                      <span key={c} style={{ fontSize: '0.75rem', background: 'var(--red-bg)', color: 'var(--red-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', marginRight: '0.3rem', border: '1px solid var(--red-border)' }}>
+                                        {c}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span style={{ fontSize: '0.75rem', background: 'var(--green-bg)', color: 'var(--green-text)', padding: '0.15rem 0.4rem', borderRadius: '4px', border: '1px solid var(--green-border)' }}>
+                                      Không sai câu nào
+                                    </span>
+                                  )}
+                                </td>
+                                <td>
+                                  <span style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    padding: '0.25rem 0.6rem',
+                                    borderRadius: '12px',
+                                    background: st.status.includes('hỗ trợ') || st.status.includes('Nguy cơ') ? 'var(--red-bg)' : st.status === 'Xuất sắc' ? 'var(--green-bg)' : 'var(--bg-subtle)',
+                                    color: st.status.includes('hỗ trợ') || st.status.includes('Nguy cơ') ? 'var(--red-text)' : st.status === 'Xuất sắc' ? 'var(--green-text)' : 'var(--text-secondary)',
+                                    border: `1px solid ${st.status.includes('hỗ trợ') || st.status.includes('Nguy cơ') ? 'var(--red-border)' : st.status === 'Xuất sắc' ? 'var(--green-border)' : 'var(--border-light)'}`
+                                  }}>
+                                    {st.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                                Không tìm thấy học viên nào phù hợp với bộ lọc.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', padding: '0.5rem 0' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                          Hiển thị trang <strong>{currentPage}</strong> / <strong>{totalPages}</strong> (Tổng <strong>{filteredAndSortedStudents.length}</strong> sinh viên)
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button 
+                            className="btn btn-outline"
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                          >
+                            <ChevronLeft size={16} /> Trang trước
+                          </button>
+                          <button 
+                            className="btn btn-outline"
+                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                          >
+                            Trang sau <ChevronRight size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

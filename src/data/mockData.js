@@ -143,7 +143,7 @@ export const MOCK_CLASS_ANALYTICS = {
   completedStudents: 24,
   averageScore: 6.8,
   maxScore: 10,
-  minScore: 3,
+  minScore: 2,
   averageTimeSpent: "4 phút 15 giây",
   passRate: "72%",
   
@@ -191,13 +191,29 @@ export const MOCK_CLASS_ANALYTICS = {
   },
 
   studentsList: [
-    { id: 1, name: "Nguyen Van A", score: 4.0, time: "3m 20s", wrongConcepts: ["RAG Architecture", "Vector DB"], status: "Cần hỗ trợ" },
-    { id: 2, name: "Tran Thi B", score: 8.0, time: "4m 45s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
-    { id: 3, name: "Le Hoang C", score: 10.0, time: "2m 50s", wrongConcepts: [], status: "Xuất sắc" },
-    { id: 4, name: "Pham Minh D", score: 6.0, time: "5m 10s", wrongConcepts: ["RAG Architecture"], status: "Trung bình" },
-    { id: 5, name: "Vu Quoc E", score: 4.0, time: "4m 00s", wrongConcepts: ["RAG Architecture", "Prompting"], status: "Cần hỗ trợ" },
-    { id: 6, name: "Hoang Anh F", score: 8.0, time: "3m 50s", wrongConcepts: ["Vector DB"], status: "Khá" },
-    { id: 7, name: "Dang Tuan G", score: 2.0, time: "6m 00s", wrongConcepts: ["RAG Architecture", "Vector DB", "Prompting"], status: "Nguy cơ cao" },
-    { id: 8, name: "Bui Thanh H", score: 8.0, time: "4m 10s", wrongConcepts: ["RAG Architecture"], status: "Khá" }
+    { id: 1, name: "Nguyễn Văn An", score: 4.0, time: "3m 20s", wrongConcepts: ["RAG Architecture", "Vector DB"], status: "Cần hỗ trợ" },
+    { id: 2, name: "Trần Thị Bình", score: 8.0, time: "4m 45s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
+    { id: 3, name: "Lê Hoàng Cường", score: 10.0, time: "2m 50s", wrongConcepts: [], status: "Xuất sắc" },
+    { id: 4, name: "Phạm Minh Dung", score: 6.0, time: "5m 10s", wrongConcepts: ["RAG Architecture"], status: "Trung bình" },
+    { id: 5, name: "Vũ Quốc Dũng", score: 4.0, time: "4m 00s", wrongConcepts: ["RAG Architecture", "Prompting"], status: "Cần hỗ trợ" },
+    { id: 6, name: "Hoàng Anh Đức", score: 8.0, time: "3m 50s", wrongConcepts: ["Vector DB"], status: "Khá" },
+    { id: 7, name: "Đặng Tuấn Giang", score: 2.0, time: "6m 00s", wrongConcepts: ["RAG Architecture", "Vector DB", "Prompting"], status: "Nguy cơ cao" },
+    { id: 8, name: "Bùi Thanh Hương", score: 8.0, time: "4m 10s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
+    { id: 9, name: "Ngô Duy Hùng", score: 10.0, time: "3m 15s", wrongConcepts: [], status: "Xuất sắc" },
+    { id: 10, name: "Đỗ Ngọc Hải", score: 6.0, time: "4m 30s", wrongConcepts: ["Vector DB"], status: "Trung bình" },
+    { id: 11, name: "Lương Quang Khải", score: 4.0, time: "5m 40s", wrongConcepts: ["RAG Architecture", "Vector DB"], status: "Cần hỗ trợ" },
+    { id: 12, name: "Trịnh Thị Khanh", score: 8.0, time: "3m 40s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
+    { id: 13, name: "Hồ Văn Long", score: 10.0, time: "2m 30s", wrongConcepts: [], status: "Xuất sắc" },
+    { id: 14, name: "Đinh Mai Linh", score: 6.0, time: "4m 20s", wrongConcepts: ["RAG Architecture"], status: "Trung bình" },
+    { id: 15, name: "Phan Văn Minh", score: 2.0, time: "6m 15s", wrongConcepts: ["RAG Architecture", "Vector DB", "Prompting"], status: "Nguy cơ cao" },
+    { id: 16, name: "Võ Thị Nam", score: 8.0, time: "3m 55s", wrongConcepts: ["Prompting"], status: "Khá" },
+    { id: 17, name: "Dương Quốc Phong", score: 6.0, time: "4m 50s", wrongConcepts: ["RAG Architecture"], status: "Trung bình" },
+    { id: 18, name: "Tạ Thị Phương", score: 10.0, time: "3m 10s", wrongConcepts: [], status: "Xuất sắc" },
+    { id: 19, name: "Cao Thanh Quân", score: 4.0, time: "5m 05s", wrongConcepts: ["RAG Architecture", "Vector DB"], status: "Cần hỗ trợ" },
+    { id: 20, name: "Thái Văn Sơn", score: 8.0, time: "3m 30s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
+    { id: 21, name: "Nguyễn Đức Thắng", score: 10.0, time: "2m 45s", wrongConcepts: [], status: "Xuất sắc" },
+    { id: 22, name: "Trần Bảo Trang", score: 6.0, time: "4m 15s", wrongConcepts: ["Vector DB"], status: "Trung bình" },
+    { id: 23, name: "Lê Thị Uyên", score: 8.0, time: "3m 50s", wrongConcepts: ["RAG Architecture"], status: "Khá" },
+    { id: 24, name: "Phạm Việt Vinh", score: 4.0, time: "5m 20s", wrongConcepts: ["RAG Architecture", "Prompting"], status: "Cần hỗ trợ" }
   ]
 };
