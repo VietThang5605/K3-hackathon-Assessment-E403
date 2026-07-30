@@ -1,0 +1,169 @@
+{
+  "timestamp": "2026-07-30T07:37:49.319Z",
+  "totalCases": 20,
+  "passCount": 18,
+  "failCount": 2,
+  "passRate": "90.0%",
+  "results": [
+    {
+      "id": "CASE-01",
+      "layer": "HAPPY_PATH",
+      "title": "Slide đầy đủ chữ về Chunking Overlap trong RAG",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.318Z"
+    },
+    {
+      "id": "CASE-02",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Cosine Similarity và Vector Indexing",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-03",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Few-shot Prompting & Chain of Thought",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-04",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Fine-tuning vs RAG trade-offs",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-05",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Hallucination Mitigation Techniques",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-06",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Sparse vs Dense Retrieval trong Search",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-07",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Embedding Models (Ada, Cohere, BGE)",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-08",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Evaluation Metrics (BLEU, ROUGE, RAGAS)",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-09",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về System Prompt Design Guidelines",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-10",
+      "layer": "HAPPY_PATH",
+      "title": "Slide về Context Window Optimization",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-11",
+      "layer": "ANTI_HALLUCINATION",
+      "title": "Slide sơ đồ kiến trúc phức tạp dạng hình ảnh",
+      "status": "PASS",
+      "score": "80%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-12",
+      "layer": "ANTI_HALLUCINATION",
+      "title": "Slide chứa các công thức toán học viết tắt",
+      "status": "FAIL",
+      "score": "40%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-13",
+      "layer": "ANTI_HALLUCINATION",
+      "title": "Slide có thông số benchmark phần cứng",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-14",
+      "layer": "LOW_CONFIDENCE",
+      "title": "Slide mỏng chữ (chỉ có từ 'BM25 + Hybrid')",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-15",
+      "layer": "LOW_CONFIDENCE",
+      "title": "Slide chỉ có 1 dòng tiêu đề không có nội dung",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-16",
+      "layer": "LOW_CONFIDENCE",
+      "title": "Slide chỉ chứa bullet points ký hiệu hình ảnh",
+      "status": "FAIL",
+      "score": "20%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-17",
+      "layer": "OUT_OF_SCOPE",
+      "title": "User upload file code Python .py thay vì Slide",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-18",
+      "layer": "OUT_OF_SCOPE",
+      "title": "User upload file báo cáo tài chính doanh nghiệp",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-19",
+      "layer": "DOMAIN_CONFUSION",
+      "title": "Chatlog SV nhầm lẫn Chunk Size vs Token Limit",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    },
+    {
+      "id": "CASE-20",
+      "layer": "DOMAIN_CONFUSION",
+      "title": "Chatlog SV nhầm Cosine vs Euclidean Distance",
+      "status": "PASS",
+      "score": "100%",
+      "executedAt": "2026-07-30T07:37:49.319Z"
+    }
+  ]
+}
