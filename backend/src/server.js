@@ -216,6 +216,16 @@ app.get('/api/quizzes/:id/heatmap', async (req, res) => {
   }
 });
 
+// GET all real student submissions for a quiz
+app.get('/api/quizzes/:id/submissions', async (req, res) => {
+  try {
+    const submissions = await dbClient.getSubmissionsByQuizId(req.params.id);
+    res.json({ success: true, count: submissions.length, submissions });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Teacher Trigger: AI Analysis on Real Class Submissions
 app.post('/api/quizzes/:id/ai-analysis', async (req, res) => {
   try {

@@ -1102,18 +1102,21 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <a 
-                    href={studentPath}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-outline"
-                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                    href={`/teacher/analytics/${quizTargetId}`}
+                    className="btn btn-primary"
+                    style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', fontSize: '0.95rem' }}
                   >
-                    <Eye size={16} /> Mở Trang Làm Bài Học Viên (Tab Mới)
+                    <BarChart3 size={18} /> Xem Bảng Điểm & Thống Kê THẬT (Real-time DB) <ArrowRight size={18} />
                   </a>
-                  <button className="btn btn-primary" onClick={() => setCurrentStep(5)} style={{ padding: '0.75rem 1.5rem' }}>
-                    <BarChart3 size={18} /> Xem Thống Kê & Bảng Điểm SV <ArrowRight size={18} />
+                  <button 
+                    type="button"
+                    className="btn btn-outline" 
+                    onClick={() => setCurrentStep(5)} 
+                    style={{ padding: '0.75rem 1.25rem', fontSize: '0.9rem' }}
+                  >
+                    ⚡ Giả lập 24 SV Nộp Bài (Chế Độ Demo)
                   </button>
                 </div>
               </div>
@@ -1155,7 +1158,7 @@ export default function Home() {
                             padding: '0.65rem 0.85rem',
                             textAlign: 'left',
                             borderRadius: 'var(--radius-sm)',
-                            border: `1px solid ${isSelected ? 'var(--primary-600)' : 'var(--border-light)'}`,
+                            border: `2px solid ${isSelected ? 'var(--primary-600)' : 'var(--border-light)'}`,
                             background: isSelected ? 'var(--primary-50)' : 'white',
                             fontWeight: isSelected ? 600 : 400,
                             cursor: 'pointer',
@@ -1193,6 +1196,25 @@ export default function Home() {
         {/* STEP 5: ANALYTICS & EVAL BENCHMARK (CP3 TABS) */}
         {currentStep === 5 && (
           <div>
+            {/* Real vs Demo Banner Notice */}
+            <div style={{
+              background: 'var(--primary-50)', border: '1px solid var(--primary-200)',
+              padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'
+            }}>
+              <div style={{ fontSize: '0.88rem', color: 'var(--primary-800)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Sparkles size={18} color="var(--primary-600)" />
+                Bạn đang ở <strong>Chế Độ Demo Giả Lập (24 SV)</strong> để trình chiếu nhanh.
+              </div>
+              <a
+                href={`/teacher/analytics/${currentQuizId || 'quiz-1'}`}
+                className="btn btn-primary"
+                style={{ fontSize: '0.825rem', padding: '0.35rem 0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <BarChart3 size={14} /> Chuyển sang Bảng Điểm & Thống Kê THẬT từ Sinh Viên (Real DB) <ArrowRight size={14} />
+              </a>
+            </div>
+
             {/* Tab Navigation Header for Step 5 */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', borderBottom: '2px solid var(--border-light)', paddingBottom: '0.5rem' }}>
               <button 
@@ -1211,7 +1233,7 @@ export default function Home() {
                   gap: '0.5rem'
                 }}
               >
-                <BarChart3 size={18} /> Báo Cáo Lỗ Hổng Kiến Thức (Knowledge Gap Heatmap)
+                <BarChart3 size={18} /> Báo Cáo Lỗ Hổng Kiến Thức (Demo Mode)
               </button>
 
               <button 
