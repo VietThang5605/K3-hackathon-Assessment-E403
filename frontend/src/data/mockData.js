@@ -6,7 +6,22 @@ export const SAMPLE_SLIDES = [
     size: "4.2 MB",
     uploadTime: "10 phút trước",
     course: "K3-AI Product Architecture",
-    author: "Giảng viên VLearn"
+    author: "Giảng viên VLearn",
+    content_text: `Kiến trúc RAG & Vector Database trong AI Application:
+1. Retrieval-Augmented Generation (RAG) Architecture Overview:
+   - Chunking Strategy (Fixed-size, Sentence-boundary, Semantic Chunking).
+   - Overlap Percentage (10-20%) giúp bảo toàn ngữ cảnh ranh giới giữa các đoạn.
+   - Vector Embedding Models (OpenAI text-embedding-3-small, BGE-M3, Cohere Embed).
+2. Vector Databases:
+   - PGVector (PostgreSQL extension), Milvus, Pinecone, Qdrant.
+   - Distance Metrics: Cosine Similarity, Inner Product, L2 Euclidean Distance.
+3. Hybrid Search Strategy:
+   - Kết hợp BM25 (Sparse Keyword Search) + Dense Vector Retrieval.
+   - Giúp nâng cao tỉ lệ chính xác khi truy vấn các thuật ngữ chuyên ngành, mã SKU, tên riêng.
+4. Reranking & Context Compression:
+   - Sử dụng Cross-Encoder (Cohere Rerank) để tái sắp xếp Top-K tài liệu liên quan nhất trước khi đưa vào LLM Prompt.
+5. RAG Triad Evaluation:
+   - Context Relevance, Groundedness (Faithfulness), và Answer Relevance.`
   },
   {
     id: "slide-2",
@@ -15,7 +30,19 @@ export const SAMPLE_SLIDES = [
     size: "3.1 MB",
     uploadTime: "Hôm qua",
     course: "K3-AI Product Architecture",
-    author: "Giảng viên VLearn"
+    author: "Giảng viên VLearn",
+    content_text: `Kỹ thuật Fine-tuning & Prompt Engineering nâng cao:
+1. Advanced Prompting Techniques:
+   - Few-shot Prompting, Chain-of-Thought (CoT), ReAct Framework (Reasoning + Acting).
+   - Structured Outputs với JSON Schema Enforcement.
+2. Fine-tuning LLMs:
+   - Parameter-Efficient Fine-Tuning (PEFT), LoRA (Low-Rank Adaptation), QLoRA 4-bit quantization.
+   - Khi nào nên Fine-tune vs RAG: Fine-tune để học style/định dạng, RAG để nạp tri thức mới.
+3. Mitigation Hallucination (Hạn chế Ảo giác):
+   - Temperature Control (T=0.1 - 0.3 cho factual Q&A).
+   - Guardrails System (NeMo Guardrails, Outlines) chặn prompt injection & hallucinated facts.
+4. LLM-as-a-Judge Evaluation:
+   - Sử dụng GPT-4o hoặc Claude 3.5 Sonnet làm Giám khảo chấm điểm tự động.`
   }
 ];
 

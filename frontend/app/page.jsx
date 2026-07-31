@@ -59,6 +59,11 @@ export default function Home() {
     { number: 5, label: "Heatmap & Eval CP3" }
   ];
 
+  // Document Preview & Delete States
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [previewSearch, setPreviewSearch] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+
   // Load uploaded documents from PostgreSQL DB on mount
   React.useEffect(() => {
     async function loadDocumentsFromDb() {
@@ -75,7 +80,8 @@ export default function Home() {
               size: d.file_size || '2.4 MB',
               uploadTime: 'Đã lưu PostgreSQL DB',
               course: d.course_name || 'K3-AI Product Architecture',
-              author: d.author || 'Giảng viên'
+              author: d.author || 'Giảng viên',
+              content_text: d.content_text || ''
             }));
             setSlideList(formattedDocs);
             setSelectedSlide(formattedDocs[0]);
@@ -114,7 +120,8 @@ export default function Home() {
             size: data.document.file_size || '1.5 MB',
             uploadTime: 'Vừa lưu PostgreSQL DB',
             course: data.document.course_name || 'K3-AI Product Architecture',
-            author: data.document.author || 'Giảng viên'
+            author: data.document.author || 'Giảng viên',
+            content_text: data.document.content_text || ''
           };
           setSlideList(prev => [newSlide, ...prev]);
           setSelectedSlide(newSlide);
@@ -133,11 +140,61 @@ export default function Home() {
       size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
       uploadTime: "Vừa tải lên",
       course: "K3-AI Product Architecture",
-      author: "Giảng viên"
+      author: "Giảng viên",
+      content_text: `Nội dung tài liệu đã tải lên từ file: ${file.name}`
     };
     setSlideList(prev => [newSlide, ...prev]);
     setSelectedSlide(newSlide);
     alert(`Đã tải lên thành công file: "${file.name}"! Slide đã được chọn để sinh Quiz.`);
+  };
+
+  // Handler: Delete Document
+  const handleDeleteSlide = async (slideId, slideTitle, e) => {
+    if (e) e.stopPropagation();
+    if (!confirm(`Bạn có chắc chắn muốn xoá tài liệu "${slideTitle}" không?`)) return;
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      await fetch(`${backendUrl}/api/documents/${slideId}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('Backend delete request error, deleting locally:', err);
+    }
+
+    setSlideList(prev => {
+      const updated = prev.filter(s => s.id !== slideId);
+      if (selectedSlide?.id === slideId) {
+        setSelectedSlide(updated.length > 0 ? updated[0] : null);
+      }
+      return updated;
+    });
+
+    if (previewDoc?.id === slideId) {
+      setPreviewDoc(null);
+    }
+
+    alert(`Đã xoá tài liệu "${slideTitle}" thành công!`);
+  };
+
+  // Handler: Preview Document
+  const handlePreviewSlide = async (slide, e) => {
+    if (e) e.stopPropagation();
+    let fullDoc = { ...slide };
+    if (!fullDoc.content_text) {
+      try {
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${backendUrl}/api/documents/${slide.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.document) {
+            fullDoc.content_text = data.document.content_text;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch document details:', err);
+      }
+    }
+    setPreviewSearch('');
+    setPreviewDoc(fullDoc);
   };
 
   // Handler: Start AI Generation (Backend Agent Call — no mock fallback)
@@ -546,7 +603,7 @@ export default function Home() {
               <Sparkles size={20} /> VLearn
             </div>
             <div className="logo-text">
-              <h1>Assessment Agent (Next.js)</h1>
+              <h1>Assessment Agent</h1>
               <p>AI Tạo Quiz & Phát hiện Lỗ hổng Học tập cho Giảng viên</p>
             </div>
           </div>
@@ -629,24 +686,67 @@ export default function Home() {
                     style={{
                       padding: '1.25rem',
                       borderRadius: 'var(--radius-md)',
-                      border: `2px solid ${selectedSlide.id === slide.id ? 'var(--primary-600)' : 'var(--border-light)'}`,
-                      background: selectedSlide.id === slide.id ? 'var(--primary-50)' : 'white',
+                      border: `2px solid ${selectedSlide?.id === slide.id ? 'var(--primary-600)' : 'var(--border-light)'}`,
+                      background: selectedSlide?.id === slide.id ? 'var(--primary-50)' : 'white',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-700)', background: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--primary-200)' }}>
-                        {slide.course}
-                      </span>
-                      {selectedSlide.id === slide.id && <CheckCircle size={18} color="var(--primary-600)" />}
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-700)', background: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid var(--primary-200)' }}>
+                          {slide.course}
+                        </span>
+                        {selectedSlide?.id === slide.id && <CheckCircle size={18} color="var(--primary-600)" />}
+                      </div>
+                      <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+                        {slide.title}
+                      </h3>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+                        📄 {slide.pages} trang • 💾 {slide.size} • 🕒 {slide.uploadTime}
+                      </p>
                     </div>
-                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
-                      {slide.title}
-                    </h3>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      📄 {slide.pages} trang • 💾 {slide.size} • 🕒 {slide.uploadTime}
-                    </p>
+
+                    {/* Actions: Preview & Delete */}
+                    <div 
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        borderTop: '1px solid var(--border-light)', paddingTop: '0.6rem', marginTop: 'auto'
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => handlePreviewSlide(slide, e)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.35rem',
+                          fontSize: '0.78rem', fontWeight: 600, color: 'var(--primary-600)',
+                          background: 'white', border: '1px solid var(--primary-200)',
+                          padding: '0.3rem 0.65rem', borderRadius: '6px', cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                        title="Xem Preview Nội Dung Tài Liệu"
+                      >
+                        <Eye size={13} /> Xem Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteSlide(slide.id, slide.title, e)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.35rem',
+                          fontSize: '0.78rem', fontWeight: 600, color: 'var(--red-text)',
+                          background: 'var(--red-bg)', border: '1px solid var(--red-border)',
+                          padding: '0.3rem 0.65rem', borderRadius: '6px', cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                        title="Xoá tài liệu này"
+                      >
+                        <Trash2 size={13} /> Xoá
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1519,6 +1619,191 @@ export default function Home() {
               <button className="btn btn-primary" onClick={() => handleSaveEdit(editingQuestion)}>
                 Lưu chỉnh sửa
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DOCUMENT PREVIEW MODAL */}
+      {previewDoc && (
+        <div 
+          onClick={() => setPreviewDoc(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+            zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1.5rem'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white', borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: '750px',
+              maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden', border: '1px solid var(--border-light)'
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'var(--bg-subtle)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <FileText size={22} color="var(--primary-600)" />
+                <div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    Xem Preview Tài Liệu
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    Chi tiết metadata & nội dung trích xuất RAG
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewDoc(null)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '1.4rem', color: 'var(--text-muted)', padding: '0.2rem 0.5rem', lineHeight: 1
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
+              {/* Title & Metadata chips */}
+              <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary-700)', marginBottom: '0.75rem' }}>
+                {previewDoc.title}
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.65rem', borderRadius: '12px', background: 'var(--primary-50)', color: 'var(--primary-700)', border: '1px solid var(--primary-200)' }}>
+                  📚 {previewDoc.course || 'K3-AI Product Architecture'}
+                </span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.65rem', borderRadius: '12px', background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-light)' }}>
+                  📄 {previewDoc.pages || '?'} trang
+                </span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.65rem', borderRadius: '12px', background: 'var(--bg-subtle)', color: 'var(--text-secondary)', border: '1px solid var(--border-light)' }}>
+                  💾 {previewDoc.size || '—'}
+                </span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.65rem', borderRadius: '12px', background: 'var(--green-bg)', color: 'var(--green-text)', border: '1px solid var(--green-border)' }}>
+                  <Database size={10} style={{ marginRight: '0.2rem', verticalAlign: 'text-bottom' }} /> PostgreSQL
+                </span>
+              </div>
+
+              {/* Text Search Bar & Copy */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input
+                    type="text"
+                    placeholder="Tìm từ khoá trong tài liệu..."
+                    value={previewSearch}
+                    onChange={(e) => setPreviewSearch(e.target.value)}
+                    style={{
+                      width: '100%', padding: '0.5rem 0.75rem 0.5rem 2.2rem',
+                      borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)',
+                      fontSize: '0.85rem', outline: 'none'
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = previewDoc.content_text || '';
+                    navigator.clipboard.writeText(text);
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 2000);
+                  }}
+                  style={{
+                    padding: '0.5rem 0.85rem', borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border-light)', background: 'var(--bg-subtle)',
+                    fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem'
+                  }}
+                >
+                  {copySuccess ? '✓ Đã sao chép' : '📋 Sao chép văn bản'}
+                </button>
+              </div>
+
+              {/* Stats bar */}
+              <div style={{
+                display: 'flex', gap: '1.5rem', padding: '0.5rem 0.85rem', background: 'var(--bg-subtle)',
+                borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontSize: '0.78rem', color: 'var(--text-muted)'
+              }}>
+                <div>Tổng ký tự: <strong style={{ color: 'var(--text-main)' }}>{(previewDoc.content_text || '').length.toLocaleString()}</strong></div>
+                <div>Ước tính số từ: <strong style={{ color: 'var(--text-main)' }}>{((previewDoc.content_text || '').split(/\s+/).filter(Boolean).length).toLocaleString()}</strong></div>
+                <div>Tác giả: <strong style={{ color: 'var(--text-main)' }}>{previewDoc.author || 'Giảng viên'}</strong></div>
+              </div>
+
+              {/* Text Content Area */}
+              <div style={{
+                background: '#f8fafc', padding: '1.25rem', borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-light)', maxHeight: '350px', overflowY: 'auto',
+                fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--text-main)', whiteSpace: 'pre-wrap'
+              }}>
+                {previewDoc.content_text ? (
+                  previewSearch ? (
+                    previewDoc.content_text.split(new RegExp(`(${previewSearch})`, 'gi')).map((part, i) =>
+                      part.toLowerCase() === previewSearch.toLowerCase() ? (
+                        <mark key={i} style={{ background: '#fef08a', color: '#854d0e', padding: '0 2px', borderRadius: '2px' }}>
+                          {part}
+                        </mark>
+                      ) : part
+                    )
+                  ) : (
+                    previewDoc.content_text
+                  )
+                ) : (
+                  <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem 0' }}>
+                    ⚠️ Chưa có trích xuất văn bản cho tài liệu này.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: '1rem 1.5rem', borderTop: '1px solid var(--border-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'var(--bg-subtle)'
+            }}>
+              <button
+                type="button"
+                onClick={(e) => handleDeleteSlide(previewDoc.id, previewDoc.title, e)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.5rem 1rem', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--red-bg)', color: 'var(--red-text)',
+                  border: '1px solid var(--red-border)', fontSize: '0.85rem', fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                <Trash2 size={15} /> Xoá tài liệu này
+              </button>
+
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => setPreviewDoc(null)}
+                  style={{ fontSize: '0.85rem' }}
+                >
+                  Đóng
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setSelectedSlide(previewDoc);
+                    setPreviewDoc(null);
+                  }}
+                  style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <CheckCircle size={15} /> Chọn làm Slide tạo Quiz
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -417,22 +417,36 @@ export default function DocumentsPage() {
 
               {/* Content Preview */}
               <div>
-                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-                  📝 Nội dung đã trích xuất
-                </h4>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    📝 Nội dung trích xuất ({selectedDoc.content_text ? selectedDoc.content_text.length.toLocaleString() : 0} ký tự)
+                  </h4>
+                  {selectedDoc.content_text && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedDoc.content_text);
+                        alert('Đã sao chép nội dung tài liệu!');
+                      }}
+                      style={{
+                        background: 'var(--bg-subtle)', border: '1px solid var(--border-light)',
+                        borderRadius: '4px', padding: '0.2rem 0.5rem', fontSize: '0.75rem',
+                        fontWeight: 600, cursor: 'pointer', color: 'var(--text-secondary)'
+                      }}
+                    >
+                      📋 Sao chép
+                    </button>
+                  )}
+                </div>
                 {selectedDoc.content_text && selectedDoc.content_text.length > 50 ? (
                   <div style={{
                     background: 'var(--bg-subtle)', padding: '1rem',
                     borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)',
-                    maxHeight: '300px', overflowY: 'auto', fontSize: '0.85rem',
-                    color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap'
+                    maxHeight: '350px', overflowY: 'auto', fontSize: '0.85rem',
+                    color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap',
+                    fontFamily: 'monospace, sans-serif'
                   }}>
-                    {selectedDoc.content_text.substring(0, 2000)}
-                    {selectedDoc.content_text.length > 2000 && (
-                      <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                        {'\n\n'}... (còn {selectedDoc.content_text.length - 2000} ký tự)
-                      </span>
-                    )}
+                    {selectedDoc.content_text}
                   </div>
                 ) : (
                   <div style={{
