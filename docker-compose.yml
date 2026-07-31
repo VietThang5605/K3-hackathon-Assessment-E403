@@ -39,6 +39,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - BACKEND_INTERNAL_URL=http://vlearn_backend:8000
     container_name: vlearn_frontend
     ports:
       - "3000:3000"
