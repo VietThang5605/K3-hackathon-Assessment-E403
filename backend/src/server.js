@@ -163,6 +163,17 @@ app.post('/api/generate-quiz', async (req, res) => {
   }
 });
 
+// Phase 2.5: List All Published Quizzes (Quiz History)
+app.get('/api/quizzes', async (req, res) => {
+  try {
+    const quizzes = await dbClient.getAllQuizzes();
+    res.json({ success: true, quizzes });
+  } catch (error) {
+    console.error('Error fetching quizzes:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Phase 3: Publish Quiz (Teacher Review Gate Approval)
 app.post('/api/quizzes/publish', async (req, res) => {
   try {
@@ -205,13 +216,61 @@ app.post('/api/quizzes/:id/submit', async (req, res) => {
   }
 });
 
-// Phase 5: Knowledge Gap Heatmap & AI 3-min Recap Suggestion
+// Phase 5: Knowledge Gap Heatmap & AI 3-min Recap Suggestion (SLOW — includes AI call)
 app.get('/api/quizzes/:id/heatmap', async (req, res) => {
   try {
     const heatmap = await teacherAgent.getKnowledgeGapHeatmap(req.params.id);
     res.json({ success: true, heatmap });
   } catch (error) {
     console.error('Error fetching heatmap:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Phase 5 FAST: DB-only heatmap (no AI call) — for real-time polling
+app.get('/api/quizzes/:id/heatmap-fast', async (req, res) => {
+  try {
+    const quiz = await dbClient.getQuizById(req.params.id);
+    const submissions = await dbClient.getSubmissionsByQuizId(req.params.id);
+
+    const conceptStats = {};
+    if (quiz && quiz.questions) {
+      quiz.questions.forEach(q => {
+        const c = q.concept || 'Kiến thức chung';
+        if (!conceptStats[c]) conceptStats[c] = { concept: c, totalAttempts: 0, wrongCount: 0 };
+      });
+    }
+    submissions.forEach(sub => {
+      const ansObj = sub.answers || {};
+      Object.keys(ansObj).forEach(qId => {
+        const item = ansObj[qId];
+        const concept = item.concept || 'Kiến thức chung';
+        if (!conceptStats[concept]) conceptStats[concept] = { concept, totalAttempts: 0, wrongCount: 0 };
+        conceptStats[concept].totalAttempts++;
+        if (!item.isCorrect) conceptStats[concept].wrongCount++;
+      });
+    });
+
+    const redConcepts = [], yellowConcepts = [], greenConcepts = [];
+    Object.values(conceptStats).forEach(st => {
+      const errorRate = st.totalAttempts > 0 ? (st.wrongCount / st.totalAttempts) * 100 : 0;
+      const item = { concept: st.concept, errorRate: Math.round(errorRate), wrongCount: st.wrongCount, totalAttempts: st.totalAttempts };
+      if (errorRate >= 40 || st.totalAttempts === 0) redConcepts.push(item);
+      else if (errorRate >= 15) yellowConcepts.push(item);
+      else greenConcepts.push(item);
+    });
+
+    res.json({
+      success: true,
+      heatmap: {
+        quizId: req.params.id,
+        totalSubmissions: submissions.length,
+        redConcepts, yellowConcepts, greenConcepts,
+        aiRecapSuggestion: null
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching fast heatmap:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

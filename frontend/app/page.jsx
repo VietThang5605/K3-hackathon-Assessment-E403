@@ -363,7 +363,7 @@ export default function Home() {
     try {
       const backendUrl = getBackendUrl();
       const targetId = qId || currentQuizId || 'quiz-default';
-      const res = await fetch(`${backendUrl}/api/quizzes/${targetId}/heatmap`);
+      const res = await fetch(`${backendUrl}/api/quizzes/${targetId}/heatmap-fast`);
       if (res.ok) {
         const data = await res.json();
         if (data.heatmap) {
@@ -681,6 +681,18 @@ export default function Home() {
               }}
             >
               <Database size={14} /> Kho Tài Liệu
+            </a>
+            <a
+              href="/teacher/quizzes"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-700)',
+                background: 'var(--primary-50)', padding: '0.3rem 0.7rem',
+                borderRadius: '20px', border: '1px solid var(--primary-200)',
+                textDecoration: 'none', cursor: 'pointer', transition: 'all 0.2s'
+              }}
+            >
+              <BookOpen size={14} /> Kho Quiz
             </a>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
               AI Model:

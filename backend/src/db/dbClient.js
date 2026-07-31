@@ -245,6 +245,31 @@ async function deleteDocument(id) {
   memoryDb.documents = memoryDb.documents.filter(d => d.id !== id);
 }
 
+async function getAllQuizzes() {
+  const sql = `
+    SELECT q.*, COALESCE(s.submission_count, 0) AS submission_count
+    FROM quizzes q
+    LEFT JOIN (
+      SELECT quiz_id, COUNT(*) AS submission_count
+      FROM quiz_submissions
+      GROUP BY quiz_id
+    ) s ON s.quiz_id = q.id
+    WHERE q.is_published = TRUE
+    ORDER BY q.created_at DESC;
+  `;
+  const pgRes = await query(sql);
+  if (pgRes && pgRes.rows) {
+    return pgRes.rows.map(r => ({ ...r, submission_count: parseInt(r.submission_count) || 0 }));
+  }
+  // Memory fallback
+  return memoryDb.quizzes
+    .filter(q => q.is_published)
+    .map(q => ({
+      ...q,
+      submission_count: memoryDb.quiz_submissions.filter(s => s.quiz_id === q.id).length
+    }));
+}
+
 module.exports = {
   query,
   insertDocument,
@@ -253,6 +278,7 @@ module.exports = {
   deleteDocument,
   saveQuiz,
   getQuizById,
+  getAllQuizzes,
   saveSubmission,
   getSubmissionsByQuizId,
   isPgConnected: () => isPgConnected

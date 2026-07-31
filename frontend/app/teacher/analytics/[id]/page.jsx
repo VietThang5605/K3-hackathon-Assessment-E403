@@ -32,7 +32,7 @@ export default function TeacherRealAnalyticsPage({ params }) {
   async function fetchRealData() {
     try {
       const [resHeatmap, resSubs] = await Promise.all([
-        fetch(`${backendUrl}/api/quizzes/${quizId}/heatmap`),
+        fetch(`${backendUrl}/api/quizzes/${quizId}/heatmap-fast`),
         fetch(`${backendUrl}/api/quizzes/${quizId}/submissions`)
       ]);
 
