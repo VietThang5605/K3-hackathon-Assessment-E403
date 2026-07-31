@@ -136,21 +136,23 @@ async function saveQuiz({ id, document_id, title, slide_title, question_count, i
   const sqlQuiz = `
     INSERT INTO quizzes (id, document_id, title, slide_title, question_count, is_published)
     VALUES ($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, is_published = EXCLUDED.is_published
+    ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, is_published = EXCLUDED.is_published, question_count = EXCLUDED.question_count
     RETURNING *;
   `;
   await query(sqlQuiz, [id, document_id, title, slide_title, question_count, is_published]);
 
-  // Insert questions
+  // Insert questions with unique IDs per quiz
   if (Array.isArray(questions)) {
-    for (const q of questions) {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      const qUniqueId = (q.id && q.id.includes(id)) ? q.id : `${id}-${q.id || (i + 1)}`;
       const sqlQ = `
         INSERT INTO quiz_questions (id, quiz_id, question, options_json, correct_answer, explanation, concept, confidence_score, is_low_confidence, warning_note)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        ON CONFLICT (id) DO UPDATE SET question = EXCLUDED.question, options_json = EXCLUDED.options_json, correct_answer = EXCLUDED.correct_answer;
+        ON CONFLICT (id) DO UPDATE SET quiz_id = EXCLUDED.quiz_id, question = EXCLUDED.question, options_json = EXCLUDED.options_json, correct_answer = EXCLUDED.correct_answer, explanation = EXCLUDED.explanation, concept = EXCLUDED.concept;
       `;
       await query(sqlQ, [
-        q.id,
+        qUniqueId,
         id,
         q.question,
         JSON.stringify(q.options),
@@ -186,21 +188,39 @@ async function getQuizById(id) {
       isLowConfidence: q.is_low_confidence,
       warningNote: q.warning_note
     })) : [];
+
+    // Fallback: If DB questions is empty, check memoryDb fallback
+    if (quiz.questions.length === 0) {
+      const memQuiz = memoryDb.quizzes.find(q => q.id === id);
+      if (memQuiz && memQuiz.questions && memQuiz.questions.length > 0) {
+        quiz.questions = memQuiz.questions;
+      }
+    }
     return quiz;
   }
 
   return memoryDb.quizzes.find(q => q.id === id) || null;
 }
 
-async function saveSubmission({ id, quiz_id, student_id, student_name, score, answers }) {
+async function saveSubmission({ id, quiz_id, student_id, student_name, student_code, score, answers }) {
+  const codeVal = student_code || student_id || `SV-${Math.floor(100000 + Math.random() * 900000)}`;
   const sql = `
     INSERT INTO quiz_submissions (id, quiz_id, student_id, student_name, score, answers_json)
     VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *;
   `;
-  await query(sql, [id, quiz_id, student_id, student_name, score, JSON.stringify(answers)]);
+  await query(sql, [id, quiz_id, codeVal, student_name, score, JSON.stringify(answers)]);
 
-  const subObj = { id, quiz_id, student_id, student_name, score, answers, submitted_at: new Date().toISOString() };
+  const subObj = {
+    id,
+    quiz_id,
+    student_id: codeVal,
+    student_name,
+    student_code: codeVal,
+    score,
+    answers,
+    submitted_at: new Date().toISOString()
+  };
   memoryDb.quiz_submissions.unshift(subObj);
   return subObj;
 }
@@ -211,6 +231,7 @@ async function getSubmissionsByQuizId(quiz_id) {
   if (pgRes && pgRes.rows) {
     return pgRes.rows.map(r => ({
       ...r,
+      student_code: r.student_id,
       answers: typeof r.answers_json === 'string' ? JSON.parse(r.answers_json) : r.answers_json
     }));
   }

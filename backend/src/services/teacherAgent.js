@@ -91,7 +91,7 @@ class TeacherAgent {
   }
 
   // Phase 4: Student Quiz Submission & Grading
-  async submitQuizAnswers({ quizId, studentId, studentName, answers }) {
+  async submitQuizAnswers({ quizId, studentId, studentName, studentCode, answers }) {
     const quiz = await dbClient.getQuizById(quizId);
     if (!quiz || !quiz.questions) {
       throw new Error(`Quiz with ID ${quizId} not found`);
@@ -116,11 +116,14 @@ class TeacherAgent {
     const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
 
     const submissionId = `sub-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const codeVal = studentCode || studentId || `SV-${Math.floor(100000 + Math.random() * 900000)}`;
+
     const submission = await dbClient.saveSubmission({
       id: submissionId,
       quiz_id: quizId,
-      student_id: studentId || `std-${Date.now()}`,
+      student_id: codeVal,
       student_name: studentName || 'Học viên VLearn',
+      student_code: codeVal,
       score: scorePercentage,
       answers: gradedAnswers
     });
@@ -202,7 +205,36 @@ class TeacherAgent {
       redConcepts,
       yellowConcepts,
       greenConcepts,
-      aiRecapSuggestion
+      aiRecapSuggestion,
+      submissions
+    };
+  }
+
+  // Teacher AI Analysis Trigger on Real Class Data
+  async generateClassAnalysis({ quizId, provider }) {
+    const heatmap = await this.getKnowledgeGapHeatmap(quizId);
+    const quiz = await dbClient.getQuizById(quizId);
+    const submissions = await dbClient.getSubmissionsByQuizId(quizId);
+
+    const avgScore = submissions.length > 0 
+      ? Math.round(submissions.reduce((acc, s) => acc + (s.score || 0), 0) / submissions.length) 
+      : 0;
+
+    const redList = heatmap.redConcepts.map(c => c.concept);
+    const yellowList = heatmap.yellowConcepts.map(c => c.concept);
+
+    return {
+      success: true,
+      quizTitle: quiz ? quiz.title : 'Bài Quiz Đánh Giá',
+      totalSubmissions: submissions.length,
+      averageScore: avgScore,
+      analysis: {
+        summary: `Lớp có ${submissions.length} sinh viên nộp bài với điểm trung bình ${avgScore}%. ${redList.length > 0 ? `Cần chú ý ôn tập gấp phần: ${redList.join(', ')}.` : 'Lớp nắm bài khá tốt.'}`,
+        criticalGaps: heatmap.redConcepts,
+        moderateGaps: heatmap.yellowConcepts,
+        masteredConcepts: heatmap.greenConcepts,
+        recapPlan3Min: heatmap.aiRecapSuggestion
+      }
     };
   }
 }

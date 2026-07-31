@@ -190,11 +190,12 @@ app.get('/api/quizzes/:id', async (req, res) => {
 
 app.post('/api/quizzes/:id/submit', async (req, res) => {
   try {
-    const { studentId, studentName, answers } = req.body;
+    const { studentId, studentName, studentCode, answers } = req.body;
     const submission = await teacherAgent.submitQuizAnswers({
       quizId: req.params.id,
-      studentId,
+      studentId: studentCode || studentId,
       studentName,
+      studentCode: studentCode || studentId,
       answers
     });
     res.json({ success: true, submission });
@@ -211,6 +212,21 @@ app.get('/api/quizzes/:id/heatmap', async (req, res) => {
     res.json({ success: true, heatmap });
   } catch (error) {
     console.error('Error fetching heatmap:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Teacher Trigger: AI Analysis on Real Class Submissions
+app.post('/api/quizzes/:id/ai-analysis', async (req, res) => {
+  try {
+    const { provider } = req.body;
+    const analysis = await teacherAgent.generateClassAnalysis({
+      quizId: req.params.id,
+      provider: provider || 'gemini'
+    });
+    res.json(analysis);
+  } catch (error) {
+    console.error('Error generating AI class analysis:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
