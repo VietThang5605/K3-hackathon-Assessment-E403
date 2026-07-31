@@ -13,4 +13,4 @@ Khi Giảng viên cần kiểm tra mức độ hiểu bài của lớp, VLearn A
 6. AI tự làm đến đâu + 1 dòng lý do
 AI tự động sinh Quiz từ Slide vLearn và tổng hợp báo cáo lỗ hổng, nhưng chuyển sang cho Giảng viên phê duyệt bộ câu hỏi trước khi gửi cho lớp – vì câu hỏi kiểm tra sai lệch/thiếu chuẩn xác sẽ làm sai lệch kết quả đánh giá năng lực học viên.
 7. 3 người sẽ thử + phân công có tên
-Kiên · Hưng · Thiện · Thắng · Đức · Phúc — Kiên: Agent Core & RAG Pipeline · Hưng: Data Evidence & Evaluation · Thiện: Prompt Engineering · Thắng: Integration & API · Đức: AI Spec & Validation · Phúc: Frontend UI/UX Web App (Giảng viên & Học viên)
+Kiên · Hưng · Thiện · Thắng · Đức · Phúc — Kiên - Khải: Agent Core & RAG Pipeline · Hưng: Data Evidence & Evaluation · Thiện: Prompt Engineering · Thắng: Integration & API · Khải - Đức: AI Spec & Validation · Phúc: Frontend UI/UX Web App (Giảng viên & Học viên)
