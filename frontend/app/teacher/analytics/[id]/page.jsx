@@ -5,10 +5,11 @@ import {
   BarChart3, RefreshCw, Sparkles, Download, Search, Users, Award, 
   CheckCircle, AlertTriangle, ArrowLeft, Clock, Eye, Server, Database, Filter, ArrowUpDown
 } from 'lucide-react';
+import { getBackendUrl } from '../../../config';
 
 export default function TeacherRealAnalyticsPage({ params }) {
   const quizId = params?.id || 'quiz-1';
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const backendUrl = getBackendUrl();
 
   // Data States
   const [heatmapData, setHeatmapData] = useState(null);

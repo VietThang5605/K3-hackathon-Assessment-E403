@@ -17,6 +17,11 @@ COPY . .
 RUN mkdir -p public
 
 ENV NEXT_TELEMETRY_DISABLED 1
+
+# Next.js rewrites() is evaluated at BUILD time, so set backend URL here
+ARG BACKEND_INTERNAL_URL=http://vlearn_backend:8000
+ENV BACKEND_INTERNAL_URL=${BACKEND_INTERNAL_URL}
+
 RUN npm run build
 
 # Production runner

@@ -9,6 +9,7 @@ import {
 import { 
   SAMPLE_SLIDES, INITIAL_QUIZ, ALTERNATIVE_QUESTIONS_POOL, MOCK_CLASS_ANALYTICS, GOLDEN_SET_MOCK_CASES 
 } from '../src/data/mockData';
+import { getBackendUrl } from './config';
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -40,7 +41,7 @@ export default function Home() {
   const handleTriggerAiAnalysis = async () => {
     setIsAnalyzingData(true);
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const qId = currentQuizId || 'quiz-1';
       const res = await fetch(`${backendUrl}/api/quizzes/${qId}/ai-analysis`, {
         method: 'POST',
@@ -127,7 +128,7 @@ export default function Home() {
   React.useEffect(() => {
     async function loadDocumentsFromDb() {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const backendUrl = getBackendUrl();
         const res = await fetch(`${backendUrl}/api/documents`);
         if (res.ok) {
           const data = await res.json();
@@ -163,7 +164,7 @@ export default function Home() {
       formData.append('file', file);
       formData.append('title', file.name);
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/documents/upload`, {
         method: 'POST',
         body: formData
@@ -213,7 +214,7 @@ export default function Home() {
     if (!confirm(`Bạn có chắc chắn muốn xoá tài liệu "${slideTitle}" không?`)) return;
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       await fetch(`${backendUrl}/api/documents/${slideId}`, { method: 'DELETE' });
     } catch (err) {
       console.warn('Backend delete request error, deleting locally:', err);
@@ -240,7 +241,7 @@ export default function Home() {
     let fullDoc = { ...slide };
     if (!fullDoc.content_text) {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const backendUrl = getBackendUrl();
         const res = await fetch(`${backendUrl}/api/documents/${slide.id}`);
         if (res.ok) {
           const data = await res.json();
@@ -261,7 +262,7 @@ export default function Home() {
     setIsGenerating(true);
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/generate-quiz`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -308,7 +309,7 @@ export default function Home() {
     setIsPublishing(true);
     const targetQuizId = currentQuizId || `quiz-${Date.now()}`;
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/quizzes/publish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -334,7 +335,7 @@ export default function Home() {
   const handleStudentSubmit = async () => {
     setIsSubmittingQuiz(true);
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const qId = currentQuizId || 'quiz-default';
       const res = await fetch(`${backendUrl}/api/quizzes/${qId}/submit`, {
         method: 'POST',
@@ -360,7 +361,7 @@ export default function Home() {
   // Handler: Fetch Knowledge Gap Heatmap (Calls GET /api/quizzes/:id/heatmap)
   const fetchHeatmapFromBackend = async (qId) => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const targetId = qId || currentQuizId || 'quiz-default';
       const res = await fetch(`${backendUrl}/api/quizzes/${targetId}/heatmap`);
       if (res.ok) {
@@ -450,7 +451,7 @@ export default function Home() {
   useEffect(() => {
     async function loadLiveEvalResults() {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const backendUrl = getBackendUrl();
         const res = await fetch(`${backendUrl}/api/eval/results`);
         if (res.ok) {
           const data = await res.json();
@@ -482,7 +483,7 @@ export default function Home() {
     setRunningSingleCaseId(caseId);
     
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/eval/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -528,7 +529,7 @@ export default function Home() {
   // Handler: Run All 20 Cases Eval Suite Execution (Sequential Live Row-by-Row Streaming)
   const handleRunAllEvalCases = async () => {
     setIsRunningAllEval(true);
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const backendUrl = getBackendUrl();
     let passCount = 0;
 
     // Mark all cases as waiting/evaluating status

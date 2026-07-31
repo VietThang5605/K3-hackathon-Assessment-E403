@@ -5,6 +5,7 @@ import {
   FileText, Upload, Trash2, Plus, Search, Clock, Database, ArrowLeft,
   ChevronDown, ChevronUp, Eye, Download, Sparkles, BookOpen, AlertTriangle
 } from 'lucide-react';
+import { getBackendUrl } from '../config';
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
@@ -16,7 +17,7 @@ export default function DocumentsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const backendUrl = getBackendUrl();
 
   // Load all documents from PostgreSQL DB
   useEffect(() => {

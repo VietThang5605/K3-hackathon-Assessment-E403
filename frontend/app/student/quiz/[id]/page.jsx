@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, AlertTriangle, Clock, ArrowRight, User, Hash, Sparkles, BookOpen, RefreshCw, Award
 } from 'lucide-react';
+import { getBackendUrl } from '../../../config';
 
 export default function StudentQuizPage({ params }) {
   const quizId = params?.id || 'quiz-1';
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const backendUrl = getBackendUrl();
 
   // Step state: 'AUTH' -> 'QUIZ' -> 'RESULT'
   const [step, setStep] = useState('AUTH');
